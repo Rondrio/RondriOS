@@ -9,17 +9,33 @@
 #include <X11/XKBlib.h>
 #include <X11/XF86keysym.h>
 
+#include <SDL2/SDL_ttf.h>
+
+
 #include "../components/lcars_button_rounded.hh"
+#include "../components/lcars_text_input.hh"
 #include "../lcars_interface.hh"
+
+static TTF_Font * font;
+static char text[] = "COLENE";
 
 class TestInterface : public LCARS_Interface {
 
 	public:
 		TestInterface(int x, int y, int width, int height) : LCARS_Interface(x, y, width, height) {
-			LCARS_Button_Rounded * rounded_btn = new LCARS_Button_Rounded(100, 100, 200, 50);
-			LCARS_Button_Rounded * rounded_btn2 = new LCARS_Button_Rounded(50, 50, 40, 40);
+
+			font = TTF_OpenFont("/usr/share/fonts/droid/DroidSans.ttf", 18);
+
+			LCARS_Button_Rounded * rounded_btn = new LCARS_Button_Rounded(200, 100, 400, 50, font, text);
+			LCARS_Button_Rounded * rounded_btn2 = new LCARS_Button_Rounded(0, 500, 200, 100, font, text);
 			rounded_btn->AddChild(rounded_btn2);
 			AddComponent(rounded_btn);
+
+			rounded_btn2->SetRoundLeft(false);
+			rounded_btn2->SetRoundRight(false);
+
+			LCARS_Text_Input * tip = new LCARS_Text_Input(500, 500, 200, 40, font, "Authorization");
+			AddComponent(tip);
 		}
 
 		void Remap() {

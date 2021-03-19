@@ -9,6 +9,7 @@
 #include <X11/XF86keysym.h>
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 
 #include "lcars_keylistener.hh"
 #include "interfaces/test_interface.hh"
@@ -83,6 +84,12 @@ int LCARS::HandleEventX(XEvent * ev) {
 			break;
 		}
 
+		case LeaveNotify: {
+
+			XSetInputFocus(m_dpy, m_root, RevertToPointerRoot, CurrentTime);
+			break;
+		}
+
 		case DestroyNotify: {
 
 			//TODO: Handle Window Destruction
@@ -150,6 +157,8 @@ int LCARS::Init() {
 
 	/* INITIALIZE SDL & XSERVER-CONNECTION */
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER);
+	TTF_Init();
+
 
 	if(!m_dpy) {
 		std::cerr << "XOpenDisplay(): Could not open Display.\n";
@@ -220,7 +229,7 @@ int LCARS::Run() {
 		if(m_active_lcars_screen)
 			m_active_lcars_screen->Draw();
 
-		SDL_Delay(2);
+		SDL_Delay(12);
 	}
 
 	return Exit(1);
@@ -249,4 +258,8 @@ void LCARS::CloseFocusedWindow() {
 
 Display * LCARS::GetDisplay() {
 	return m_dpy;
+}
+
+LCARS_Screen * LCARS::GetScreen() {
+	return m_active_lcars_screen;
 }

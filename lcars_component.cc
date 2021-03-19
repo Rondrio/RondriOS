@@ -1,6 +1,13 @@
 #include "lcars_component.hh"
 
+#include <iostream>
 #include <SDL2/SDL.h>
+
+LCARS_Component::LCARS_Component(SDL_Rect rect) {
+		m_bounds = rect;
+		m_has_pd_focus = false;
+		m_has_kb_focus = false;
+}
 
 LCARS_Component::~LCARS_Component() {
 
@@ -17,6 +24,13 @@ SDL_Rect LCARS_Component::GetAbsoluteBounds() {
 	pos.y += m_bounds.y;
 
 	return pos;
+}
+
+void LCARS_Component::SetNeedsRepaint(bool b) {
+	m_needs_repaint = b;
+
+	if(m_parent)
+		m_parent->SetNeedsRepaint(b);
 }
 
 void LCARS_Component::SetPosX(int x) {
@@ -52,12 +66,14 @@ int LCARS_Component::GetWidth() {
 }
 
 void LCARS_Component::Draw(SDL_Renderer * renderer) {
+		SDL_Rect abs = GetAbsoluteBounds();
 
-	Paint(renderer);
+		PaintContext ctx(renderer, abs);
+		Paint(&ctx);
 
-	for(int i = 0; i < m_children.Size(); ++i) {
-		m_children[i]->Paint(renderer);
-	}
+		for(int i = 0; i < m_children.Size(); ++i) {
+			m_children[i]->Draw(renderer);
+		}
 }
 
 LCARS_Component * LCARS_Component::ComponentAt(int x, int y) {
@@ -74,16 +90,32 @@ LCARS_Component * LCARS_Component::ComponentAt(int x, int y) {
 
 void LCARS_Component::AddChild(LCARS_Component * cmp) {
 	m_children.Add(cmp);
-	cmp->m_parent = this;
+	cmp->SetParent(this);
 }
 
 void LCARS_Component::RemChild(LCARS_Component * cmp) {
-	cmp->m_parent = nullptr;
+	cmp->SetParent(nullptr);
 	m_children.Rem(cmp);
 }
 
-bool LCARS_Component::IsPointInHitbox(int x, int y) {
-	return false;
+void LCARS_Component::AddEventListener(event_listener listener) {
+	if(listener)
+		m_ev_listeners += listener;
+}
+
+void LCARS_Component::RemEventListener(event_listener listener) {
+	if(listener)
+		m_ev_listeners -= listener;
+}
+
+void LCARS_Component::DispatchEvent(Event event) {
+
+	std::cout << "JETZT WIRD'S ERNST: \n";
+	m_ev_listeners.Size();
+
+//	for(int i = 0; i < m_ev_listeners.Size(); ++i) {
+//		m_ev_listeners[i](event);
+//	}
 }
 
 void LCARS_Component::SetPDFocus(bool b) {
@@ -92,4 +124,8 @@ void LCARS_Component::SetPDFocus(bool b) {
 
 void LCARS_Component::SetKBFocus(bool b) {
 	m_has_kb_focus = b;
+}
+
+void LCARS_Component::SetParent(LCARS_ICP * parent) {
+	m_parent = parent;
 }

@@ -73,6 +73,7 @@ class LCARS {
 		void CloseFocusedWindow();
 
 		Display * GetDisplay();
+		LCARS_Screen * GetScreen();
 
 		int Checkmod(XKeyEvent ke, KeyListener listener);
 };

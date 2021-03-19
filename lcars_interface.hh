@@ -22,10 +22,10 @@ struct window_move_t {
 	int				y_offset;
 };
 
-class LCARS_Interface {
+class LCARS_Interface : public LCARS_ICP {
 
 	private:
-		window_move_t m_window_move;
+		window_move_t	m_window_move;
 
 	protected:
 
@@ -56,6 +56,7 @@ class LCARS_Interface {
 		void AddComponent	(LCARS_Component * cmp);
 		void RemComponent	(LCARS_Component * cmp);
 
+		void SetNeedsRepaint(bool b);
 
 		void				SetFocusedWindow	(Window w);
 		void				SetFocusedWindow	(LCARS_Window * w);

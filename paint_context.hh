@@ -2,6 +2,7 @@
 #define PAINT_CONTEXT_HH_
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 
 struct bezier_t {
 	signed short * vx;
@@ -10,25 +11,52 @@ struct bezier_t {
 	int s;
 };
 
+struct text_t {
+	SDL_Texture *	tex_text;
+	char		*	str;
+	SDL_Rect		bounds;
+};
+
 class PaintContext {
 	private:
 		SDL_Rect	m_bounds;
 		SDL_Color	m_color;
+
+		TTF_Font *	m_font;
+
+		SDL_Renderer * m_renderer;
+
+		text_t *	PrepareText(int16_t x, int16_t y, char * str, SDL_Surface * surf);
+		void		PrepareRect(SDL_Rect * rect, SDL_Rect * rect_out);
 
 	public:
 			PaintContext() = delete;
 			PaintContext(SDL_Renderer * renderer, SDL_Rect bounds);
 		~	PaintContext();
 
-		void SetColor(int r, int g, int b, int a);
+		SDL_Rect const * GetOffset();
+
+		void SetColor	(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
+		void SetFont	(TTF_Font * font);
 
 		void FillRect(SDL_Rect * rect);
 		void DrawRect(SDL_Rect * rect);
 
-		void FillCircle(int x, int y, int r);
-		void DrawCircle(int x, int y, int r);
+		void FillCircle(int16_t x, int16_t y, int16_t rad);
+		void DrawCircle(int16_t x, int16_t y, int16_t rad);
 
-		void DrawBezier(bezier_t bezier_curve);
+		void FillEllipse(int16_t x, int16_t y, int16_t rx, int16_t ry);
+		void DrawEllipse(int16_t x, int16_t y, int16_t rx, int16_t ry);
+
+		/**
+		 * For every Text, this Method should only be called once. As it is
+		 * very expensive.
+		 * */
+				text_t *	PrepareBlendedText(int16_t x, int16_t y, char * str);
+				text_t *	PrepareSolidText(int16_t x, int16_t y, char * str);
+		static	void		DestroyText(text_t * text);
+
+		void DrawText(text_t * text, SDL_Rect * src, SDL_Rect * dst);
 };
 
 

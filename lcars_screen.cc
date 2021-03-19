@@ -23,21 +23,22 @@ LCARS_Screen::~LCARS_Screen() {
 
 void LCARS_Screen::Draw() {
 
-	SDL_RenderClear(m_sdl_renderer);
+	//SDL_RenderClear(m_sdl_renderer);
 	/* --------------------------------------- */
 
-	SDL_SetRenderDrawColor(m_sdl_renderer, 100, 100, 200, 255);
-	SDL_Rect r = {0, 0, 400, 400};
-
-	SDL_RenderFillRect(m_sdl_renderer, &r);
 
 	if(m_interface)
 		m_interface->Draw(m_sdl_renderer);
 
+	/*SDL_SetRenderDrawColor(m_sdl_renderer, 100, 100, 200, 255);
+	SDL_Rect r = {0, 0, 400, 400};
+
+	SDL_RenderFillRect(m_sdl_renderer, &r);*/
+
 	SDL_SetRenderDrawColor(m_sdl_renderer, 0, 0, 0, 255);
 
 	/* --------------------------------------- */
-	SDL_RenderPresent(m_sdl_renderer);
+	//SDL_RenderPresent(m_sdl_renderer);
 }
 
 void LCARS_Screen::Remap() {

@@ -44,6 +44,7 @@ static void quit(LCARS * lcars, Arg * arg) {
 
 static void close(LCARS * lcars, Arg * arg) {
 	lcars->CloseFocusedWindow();
+	lcars->GetScreen()->GetInterface()->SetNeedsRepaint(true);
 }
 
 static void summon(LCARS * lcars, Arg * arg) {
@@ -86,10 +87,8 @@ int main(int argc, char ** argv) {
 	lcars.AddKeyListener(&keylisteners[2]);
 	lcars.AddKeyListener(&keylisteners[3]);
 	lcars.AddKeyListener(&keylisteners[4]);
+	lcars.AddKeyListener(&keylisteners[5]);
 
 	lcars.Run();
 	lcars.Exit(1);
-
-
-
 }

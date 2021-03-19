@@ -2,6 +2,7 @@
 #define SIMPLE_LIST_HH_
 
 #include <cstdlib>
+#include <iostream>
 
 namespace smp {
 
