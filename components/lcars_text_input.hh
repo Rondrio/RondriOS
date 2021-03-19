@@ -24,7 +24,7 @@ class LCARS_Text_Input : public LCARS_Component {
 		text_t *	m_placeholder_text;
 		SDL_Color	m_placeholder_color;
 
-		unsigned long	m_caret_pos;
+		uint64_t		m_caret_pos;
 		std::string 	m_text_string;
 		text_t *		m_text;
 
@@ -39,6 +39,8 @@ class LCARS_Text_Input : public LCARS_Component {
 	public:
 		LCARS_Text_Input() = delete;
 		LCARS_Text_Input(int16_t x, int16_t y, int16_t w, int16_t h, TTF_Font * font, std::string placeholder);
+
+		virtual ~LCARS_Text_Input();
 
 		void SetBorderWidth(uint8_t w);
 		void SetBorderColor(SDL_Color c);
@@ -55,7 +57,7 @@ class LCARS_Text_Input : public LCARS_Component {
 		virtual bool PointInHitbox(int x, int y)		override;
 		virtual void Paint(PaintContext * paintctx)		override;
 
-		virtual void HandleSDLEvent(SDL_Event * ev)		override;
+		virtual void HandleSDLEvent(SDL_Event * ev)			override;
 		virtual void OnUnhandledSDLEvent(SDL_Event * ev)	override;
 
 		virtual void HandleCMPEvent(CMP_EVT_TYPE type)		override;

@@ -23,6 +23,14 @@ LCARS_Text_Input::LCARS_Text_Input(int16_t x, int16_t y, int16_t w, int16_t h, T
 	m_placeholder_color	= {100, 100, 100, 255};
 }
 
+LCARS_Text_Input::~LCARS_Text_Input() {
+	if(m_placeholder_text)
+		PaintContext::DestroyText(m_placeholder_text);
+
+	if(m_text)
+		PaintContext::DestroyText(m_text);
+}
+
 void LCARS_Text_Input::SetBorderWidth(uint8_t w) {
 	m_border_width = w;
 	SetNeedsRepaint(true);
@@ -182,7 +190,7 @@ void LCARS_Text_Input::HandleSDLEvent(SDL_Event * ev) {
 					else
 						m_caret_pos = 0;
 
-					int text_len = m_text_string.length() - 1;
+					uint64_t text_len = m_text_string.length() - 1;
 
 					// Right Bounds Check
 					if(m_caret_pos > text_len)
@@ -200,7 +208,7 @@ void LCARS_Text_Input::HandleSDLEvent(SDL_Event * ev) {
 
 				case SDLK_RIGHT: {
 
-					int text_len = m_text_string.length() - 1;
+					uint64_t text_len = m_text_string.length() - 1;
 
 					if(m_caret_pos <= text_len)
 						m_caret_pos++;
@@ -265,6 +273,8 @@ void LCARS_Text_Input::HandleCMPEvent(CMP_EVT_TYPE type) {
 			SDL_StopTextInput();
 			SetNeedsRepaint(true);
 			break;
+		default:
+		{}
 	}
 }
 

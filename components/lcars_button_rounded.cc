@@ -101,7 +101,6 @@ void LCARS_Button_Rounded::Paint(PaintContext * paintctx) {
 		bounds->y  = m_bounds.h - bounds->h;
 	}
 
-	/* When there is a Text applied, draw it here. */
 	if(m_button_text) {
 		SDL_Rect src = {0, 0, m_button_text->bounds.w, m_button_text->bounds.h};
 		SDL_Rect dst = {m_button_text->bounds.x, m_button_text->bounds.y, m_button_text->bounds.w, m_button_text->bounds.h};

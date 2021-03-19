@@ -2,22 +2,16 @@
 #define INTERFACES_TEST_INTERFACE_HH_
 
 #include <iostream>
-
-#include <X11/Xlib.h>
-#include <X11/X.h>
-#include <X11/keysym.h>
-#include <X11/XKBlib.h>
-#include <X11/XF86keysym.h>
-
 #include <SDL2/SDL_ttf.h>
 
 
 #include "../components/lcars_button_rounded.hh"
 #include "../components/lcars_text_input.hh"
+#include "../components/lcars_label.hh"
 #include "../lcars_interface.hh"
 
 static TTF_Font * font;
-static char text[] = "COLENE";
+static char text[] = "SYSTEMS";
 
 class TestInterface : public LCARS_Interface {
 
@@ -36,6 +30,9 @@ class TestInterface : public LCARS_Interface {
 
 			LCARS_Text_Input * tip = new LCARS_Text_Input(500, 500, 200, 40, font, "Authorization");
 			AddComponent(tip);
+
+			LCARS_Label * label = new LCARS_Label(700, 100, 100, 50, font, "LABEL Text");
+			AddComponent(label);
 		}
 
 		void Remap() {

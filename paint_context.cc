@@ -3,6 +3,7 @@
 #include <SDL2/SDL2_gfxPrimitives.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL.h>
+#include <iostream>
 
 PaintContext::PaintContext(SDL_Renderer * renderer, SDL_Rect bounds) {
 	m_renderer	= renderer;
@@ -22,8 +23,10 @@ text_t * PaintContext::PrepareText(int16_t x, int16_t y, char * str, SDL_Surface
 	if(surf)
 		SDL_FreeSurface(surf);
 
-	if(!tex)
+	if(!tex) {
+		std::cerr << "ERROR: " << SDL_GetError() << std::endl;
 		return nullptr;
+	}
 
 	int h, w;
 	TTF_SizeText(m_font, str, &w, &h);
@@ -33,6 +36,9 @@ text_t * PaintContext::PrepareText(int16_t x, int16_t y, char * str, SDL_Surface
 	};
 
 	text_t * text = (text_t *) malloc(sizeof(text_t));
+
+	if(!text)
+		std::cerr << "ERROR: Could not allocate Memory." << std::endl;
 
 	text->tex_text	= tex;
 	text->str		= str;
@@ -67,8 +73,11 @@ void PaintContext::FillRect(SDL_Rect * rect) {
 	SDL_Rect r;
 	PrepareRect(rect, &r);
 
-	SDL_SetRenderDrawColor(m_renderer, m_color.r, m_color.g, m_color.b, m_color.a);
-	SDL_RenderFillRect(m_renderer, &r);
+	if(SDL_SetRenderDrawColor(m_renderer, m_color.r, m_color.g, m_color.b, m_color.a) == -1)
+		std::cerr << "ERROR: " << SDL_GetError() << std::endl;
+
+	if(SDL_RenderFillRect(m_renderer, &r) == -1)
+		std::cerr << "ERROR: " << SDL_GetError() << std::endl;
 }
 
 void PaintContext::DrawRect(SDL_Rect * rect) {
@@ -76,9 +85,6 @@ void PaintContext::DrawRect(SDL_Rect * rect) {
 	PrepareRect(rect, &r);
 
 	rectangleRGBA(m_renderer, r.x, r.y, r.x+r.w, r.y+r.h, m_color.r, m_color.g, m_color.b, m_color.a);
-
-	//SDL_SetRenderDrawColor(m_renderer, m_color.r, m_color.g, m_color.b, m_color.a);
-	//SDL_RenderDrawRect(m_renderer, &r);
 }
 
 void PaintContext::FillCircle(int16_t x, int16_t y, int16_t rad) {
@@ -115,11 +121,19 @@ void PaintContext::DrawEllipse(int16_t x, int16_t y, int16_t rx, int16_t ry) {
 
 text_t * PaintContext::PrepareBlendedText(int16_t x, int16_t y, char * str) {
 	SDL_Surface * surf	= TTF_RenderText_Blended(m_font, str, m_color);
+
+	if(!surf)
+		std::cerr << "ERROR: " << SDL_GetError() << std::endl;
+
 	return PrepareText(x, y, str, surf);
 }
 
 text_t * PaintContext::PrepareSolidText(int16_t x, int16_t y, char * str) {
 	SDL_Surface * surf	= TTF_RenderText_Solid(m_font, str, m_color);
+
+	if(!surf)
+		std::cerr << "ERROR: " << SDL_GetError() << std::endl;
+
 	return PrepareText(x, y, str, surf);
 }
 
@@ -129,9 +143,8 @@ void PaintContext::DestroyText(text_t * text) {
 }
 
 void PaintContext::DrawText(text_t * text, SDL_Rect * src, SDL_Rect * dst) {
-	//SDL_Rect src = {0, 0, (&text->bounds)->w, (&text->bounds)->h};
-	//SDL_RenderCopy(m_renderer, text->tex_text, &src, &(text->bounds));
-
 	SDL_Rect dst_modded = {m_bounds.x + dst->x, m_bounds.y + dst->y, dst->w, dst->h};
-	SDL_RenderCopy(m_renderer, text->tex_text, src, &dst_modded);
+
+	if(SDL_RenderCopy(m_renderer, text->tex_text, src, &dst_modded) == -1)
+		std::cerr << "ERROR: " << SDL_GetError() << std::endl;
 }
