@@ -13,7 +13,6 @@ class LCARS_Button_Rounded : public LCARS_Button {
 	private:
 		static constexpr double c_ellipse_factor = 39.0/46.0;
 		int			m_circle_radius;
-		SDL_Rect	m_inner_rect;
 
 		text_t *	m_button_text;
 
@@ -22,6 +21,7 @@ class LCARS_Button_Rounded : public LCARS_Button {
 
 		bool IsInInnerRect	(int x, int y, SDL_Rect abs);
 		bool IsInCircles	(int x, int y, SDL_Rect abs);
+		SDL_Rect CalcInnerRect();
 
 	public:
 			LCARS_Button_Rounded(int x, int y, int w, int h, TTF_Font * font, char * text);

@@ -248,10 +248,10 @@ void LCARS_Text_Input::HandleSDLEvent(SDL_Event * ev) {
 			int h, w;
 			TTF_SizeText(m_font, new_text_string.c_str(), &w, &h);
 
-			if(w < m_bounds.w - m_padding) {
+			//if(w < m_bounds.w - m_padding) {
 				m_text_string	 = new_text_string;
 				m_caret_pos		+= strlen(tip->text);
-			}
+			//}
 
 			SetNeedsRepaint(true);
 			break;

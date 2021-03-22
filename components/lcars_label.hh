@@ -13,6 +13,7 @@ class LCARS_Label : public LCARS_Component {
 
 	private:
 		TTF_Font *	m_font;
+		std::string m_font_path;
 		SDL_Color	m_font_color;
 		text_t *	m_text;
 		std::string m_text_string;
@@ -25,7 +26,7 @@ class LCARS_Label : public LCARS_Component {
 
 	public:
 					LCARS_Label() = delete;
-					LCARS_Label(int x, int y, int w, int h, TTF_Font * font, std::string text);
+					LCARS_Label(int x, int y, int w, int h, std::string font_path, std::string text);
 		virtual ~	LCARS_Label();
 
 		void		SetFontColor	(SDL_Color c);
@@ -36,6 +37,8 @@ class LCARS_Label : public LCARS_Component {
 
 		void		SetFont(TTF_Font * font);
 		TTF_Font *	GetFont();
+
+		virtual void SetHeight(int h) override;
 
 		virtual bool PointInHitbox(int x, int y)		override;
 		virtual void Paint(PaintContext * paintctx)		override;

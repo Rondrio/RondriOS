@@ -17,7 +17,6 @@ static bool is_in_circle(int x, int y, int cx, int cy, int r) {
 
 LCARS_Button_Rounded::LCARS_Button_Rounded(int x, int y, int w, int h, TTF_Font * font, char * text) : LCARS_Button({x,y,w,h}, font, text) {
 	m_circle_radius	= h/2;
-	m_inner_rect	= {h/2, 0, w-h, h};
 	m_button_text	= nullptr;
 
 	m_round_left	= true;
@@ -42,9 +41,18 @@ LCARS_Button_Rounded::~LCARS_Button_Rounded() {
 		PaintContext::DestroyText(m_button_text);
 }
 
+
+SDL_Rect LCARS_Button_Rounded::CalcInnerRect() {
+	return {m_bounds.h/2*m_round_left, 0, m_bounds.w-m_bounds.h/2*m_round_left-m_bounds.h/2*m_round_right, m_bounds.h};
+}
+
+
 bool LCARS_Button_Rounded::IsInInnerRect(int x, int y, SDL_Rect abs) {
-	return (x >= m_inner_rect.x + abs.x && x <= (m_inner_rect.x + m_bounds.w - m_bounds.h/2*!m_round_right - m_bounds.h*m_round_right + abs.x)) &&
-			(y >= m_inner_rect.y + abs.y && y <= (m_inner_rect.y + m_inner_rect.h + abs.y));
+
+	SDL_Rect inner_rect = CalcInnerRect();
+
+	return (x >= inner_rect.x + abs.x && x <= inner_rect.w + abs.x) &&
+			(y >= inner_rect.y + abs.y && y <= inner_rect.h + abs.y);
 }
 
 bool LCARS_Button_Rounded::IsInCircles(int x, int y, SDL_Rect abs) {
@@ -75,7 +83,9 @@ void LCARS_Button_Rounded::Paint(PaintContext * paintctx) {
 		c = GetColor(BTN_COLOR_TYPE::COLOR_IDLE);
 
 	paintctx->SetColor(c->r, c->g, c->b, c->a);
-	paintctx->FillRect(&m_inner_rect);
+
+	SDL_Rect inner_rect = CalcInnerRect();
+	paintctx->FillRect(&inner_rect);
 
 	int rx = (int)(m_circle_radius*c_ellipse_factor);
 
@@ -121,22 +131,8 @@ void LCARS_Button_Rounded::OnUnhandledSDLEvent(SDL_Event * ev) {
 
 void LCARS_Button_Rounded::SetRoundLeft(bool b) {
 	m_round_left = b;
-
-	if(b) {
-		m_inner_rect.x = m_bounds.h/2;
-		m_inner_rect.w = m_bounds.w - m_bounds.h;
-	} else {
-		m_inner_rect.x = 0;
-		m_inner_rect.w = m_bounds.w - m_bounds.h/2;
-	}
 }
 
 void LCARS_Button_Rounded::SetRoundRight(bool b) {
 	m_round_right = b;
-
-	if(b) {
-		m_inner_rect.w = m_bounds.w - m_bounds.h;
-	} else {
-		m_inner_rect.w = m_bounds.w - m_bounds.h/2;
-	}
 }

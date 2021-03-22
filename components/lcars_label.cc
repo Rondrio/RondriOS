@@ -6,22 +6,28 @@
 
 #include "../lcars_component.hh"
 
-LCARS_Label::LCARS_Label(int x, int y, int w, int h, TTF_Font * font, std::string text) : LCARS_Component({x,y,w,h}) {
+LCARS_Label::LCARS_Label(int x, int y, int w, int h, std::string font_path, std::string text) : LCARS_Component({x,y,w,h}) {
 	m_font_color	= {255, 255, 255, 255};
 	m_bg_color		= {  0,   0,   0, 255};
 
 	m_draw_bg	= false;
-	m_padding	= 5;
-	m_vpadding	= 5;
+	m_padding	= 0;
+	m_vpadding	= 0;
 
-	m_font		= font;
+	m_font_path = font_path;
+	m_font		= TTF_OpenFont(font_path.c_str(), h);
 	m_text		= nullptr;
 	m_text_string = text;
+
+	SetHeight(h);
 }
 
 LCARS_Label::~LCARS_Label() {
 	if(m_text)
 		PaintContext::DestroyText(m_text);
+
+	if(m_font)
+		TTF_CloseFont(m_font);
 }
 
 void LCARS_Label::SetFontColor(SDL_Color c) {
@@ -49,6 +55,25 @@ void LCARS_Label::SetFont(TTF_Font * font) {
 
 TTF_Font * LCARS_Label::GetFont() {
 	return m_font;
+}
+
+void LCARS_Label::SetHeight(int h) {
+	LCARS_Component::SetHeight(h);
+
+	if(m_font)
+		TTF_CloseFont(m_font);
+
+	m_font = TTF_OpenFont(m_font_path.c_str(), h);
+
+	int width, height;
+	TTF_SizeText(m_font, m_text_string.c_str(), &width, &height);
+
+	if(m_text) {
+		m_text->bounds.h = h;
+		m_text->bounds.w = width;
+	}
+
+	LCARS_Component::SetWidth(width);
 }
 
 bool LCARS_Label::PointInHitbox(int x, int y) {

@@ -53,23 +53,23 @@ class LCARS_Component : public LCARS_ICP {
 
 		virtual void HandleCMPEvent(CMP_EVT_TYPE type) = 0;
 
-		void	SetPosX(int x);
-		int		GetPosX();
+		virtual void	SetPosX(int x);
+		virtual int		GetPosX();
 
-		void	SetPosY(int y);
-		int		GetPosY();
+		virtual void	SetPosY(int y);
+		virtual int		GetPosY();
 
-		void	SetHeight(int h);
-		int		GetHeight();
+		virtual void	SetHeight(int h);
+		virtual int		GetHeight();
 
-		void	SetWidth(int w);
-		int		GetWidth();
+		virtual void	SetWidth(int w);
+		virtual int		GetWidth();
 
 		void Draw(SDL_Renderer * renderer);
 		LCARS_Component * ComponentAt(int x, int y);
 
-		void AddChild(LCARS_Component * cmp);
-		void RemChild(LCARS_Component * cmp);
+		virtual void AddChild(LCARS_Component * cmp);
+		virtual void RemChild(LCARS_Component * cmp);
 
 		void AddEventListener(event_listener listener);
 		void RemEventListener(event_listener listener);

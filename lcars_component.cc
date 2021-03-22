@@ -20,6 +20,11 @@ SDL_Rect LCARS_Component::GetAbsoluteBounds() {
 		pos = m_parent->GetAbsoluteBounds();
 	}
 
+	//if(pos.x == 0 && pos.y == 0) {
+		pos.w = m_bounds.w;
+		pos.h = m_bounds.h;
+	//}
+
 	pos.x += m_bounds.x;
 	pos.y += m_bounds.y;
 
@@ -35,6 +40,7 @@ void LCARS_Component::SetNeedsRepaint(bool b) {
 
 void LCARS_Component::SetPosX(int x) {
 	m_bounds.x = x;
+	SetNeedsRepaint(true);
 }
 
 int LCARS_Component::GetPosX() {
@@ -43,6 +49,7 @@ int LCARS_Component::GetPosX() {
 
 void LCARS_Component::SetPosY(int y) {
 	m_bounds.y = y;
+	SetNeedsRepaint(true);
 }
 
 int LCARS_Component::GetPosY() {
@@ -51,6 +58,7 @@ int LCARS_Component::GetPosY() {
 
 void LCARS_Component::SetHeight(int h) {
 	m_bounds.h = h;
+	SetNeedsRepaint(true);
 }
 
 int LCARS_Component::GetHeight() {
@@ -59,6 +67,7 @@ int LCARS_Component::GetHeight() {
 
 void LCARS_Component::SetWidth(int w) {
 	m_bounds.w = w;
+	SetNeedsRepaint(true);
 }
 
 int LCARS_Component::GetWidth() {
@@ -70,6 +79,7 @@ void LCARS_Component::Draw(SDL_Renderer * renderer) {
 
 		PaintContext ctx(renderer, abs);
 		Paint(&ctx);
+		ctx.PaintScreen();
 
 		for(int i = 0; i < m_children.Size(); ++i) {
 			m_children[i]->Draw(renderer);
@@ -109,13 +119,9 @@ void LCARS_Component::RemEventListener(event_listener listener) {
 }
 
 void LCARS_Component::DispatchEvent(Event event) {
-
-	std::cout << "JETZT WIRD'S ERNST: \n";
-	m_ev_listeners.Size();
-
-//	for(int i = 0; i < m_ev_listeners.Size(); ++i) {
-//		m_ev_listeners[i](event);
-//	}
+	for(int i = 0; i < m_ev_listeners.Size(); ++i) {
+		m_ev_listeners[i](event);
+	}
 }
 
 void LCARS_Component::SetPDFocus(bool b) {

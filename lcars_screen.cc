@@ -11,7 +11,7 @@ LCARS_Screen::LCARS_Screen(Display * dpy, int x, int y, int width, int height) {
 	m_height	= height;
 
 	m_sdl_window	= SDL_CreateWindow("LCARS SCREEN", x, y, width, height, SDL_WINDOW_SHOWN/*|SDL_WINDOW_FULLSCREEN*/);
-	m_sdl_renderer	= SDL_CreateRenderer(m_sdl_window, -1, SDL_RENDERER_ACCELERATED);
+	m_sdl_renderer	= SDL_CreateRenderer(m_sdl_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
 
 	m_interface = nullptr;
 }

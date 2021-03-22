@@ -206,6 +206,7 @@ int LCARS::Run() {
 		XGrabKey(m_dpy, kc, kl->modmask, m_root, true, GrabModeAsync, GrabModeAsync);
 	}
 
+	sigset_t	sig;
 	XEvent		ev;
 	SDL_Event	sdl_ev;
 	while(m_running) {

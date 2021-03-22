@@ -5,19 +5,36 @@
 #include <SDL2/SDL.h>
 #include <iostream>
 
+#include "paint_context_ex.hh"
+
 PaintContext::PaintContext(SDL_Renderer * renderer, SDL_Rect bounds) {
 	m_renderer	= renderer;
 	m_bounds	= bounds;
 	m_color		= {0, 0, 0, 255};
 	m_font		= nullptr;
+
+	m_texture = SDL_CreateTexture(
+			renderer,
+			SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET,
+			bounds.w, bounds.h);
+
+	if(!m_texture) {
+		std::cerr << "FATAL ERROR: " << SDL_GetError() << std::endl;
+		exit(0);
+	}
+
+	SDL_SetTextureBlendMode(m_texture, SDL_BLENDMODE_BLEND);
 }
 
 PaintContext::~PaintContext() {
-
+	//PaintScreen();
+	SDL_SetRenderTarget(m_renderer, NULL);
+	SDL_DestroyTexture(m_texture);
 }
 
 text_t * PaintContext::PrepareText(int16_t x, int16_t y, char * str, SDL_Surface * surf) {
 
+	SDL_SetRenderTarget(m_renderer, NULL);
 	SDL_Texture * tex	= SDL_CreateTextureFromSurface(m_renderer, surf);
 
 	if(surf)
@@ -70,53 +87,48 @@ void PaintContext::SetFont(TTF_Font * font) {
 }
 
 void PaintContext::FillRect(SDL_Rect * rect) {
-	SDL_Rect r;
-	PrepareRect(rect, &r);
+
+	if(SDL_SetRenderTarget(m_renderer, m_texture) == -1)
+		std::cerr << "ERROR H: " << SDL_GetError() << std::endl;
 
 	if(SDL_SetRenderDrawColor(m_renderer, m_color.r, m_color.g, m_color.b, m_color.a) == -1)
 		std::cerr << "ERROR: " << SDL_GetError() << std::endl;
 
-	if(SDL_RenderFillRect(m_renderer, &r) == -1)
+	if(SDL_RenderFillRect(m_renderer, rect) == -1)
+		std::cerr << "ERROR: " << SDL_GetError() << std::endl;
+
+	if(SDL_SetRenderTarget(m_renderer, NULL) == -1)
 		std::cerr << "ERROR: " << SDL_GetError() << std::endl;
 }
 
 void PaintContext::DrawRect(SDL_Rect * rect) {
-	SDL_Rect r;
-	PrepareRect(rect, &r);
-
-	rectangleRGBA(m_renderer, r.x, r.y, r.x+r.w, r.y+r.h, m_color.r, m_color.g, m_color.b, m_color.a);
+	SDL_SetRenderTarget(m_renderer, m_texture);
+	rectangleRGBA(m_renderer, rect->x, rect->y, rect->x+rect->w, rect->y+rect->h, m_color.r, m_color.g, m_color.b, m_color.a);
+	SDL_SetRenderTarget(m_renderer, NULL);
 }
 
 void PaintContext::FillCircle(int16_t x, int16_t y, int16_t rad) {
-
-	x += m_bounds.x;
-	y += m_bounds.y;
-
-	filledCircleRGBA(m_renderer, x, y, rad, m_color.r, m_color.g, m_color.b, m_color.a);
+	SDL_SetRenderTarget(m_renderer, m_texture);
+	aaFilledEllipseRGBA(m_renderer, x, y, rad, rad, m_color.r, m_color.g, m_color.b, m_color.a);
+	SDL_SetRenderTarget(m_renderer, NULL);
 }
 
 void PaintContext::DrawCircle(int16_t x, int16_t y, int16_t rad) {
-
-	x += m_bounds.x;
-	y += m_bounds.y;
-
+	SDL_SetRenderTarget(m_renderer, m_texture);
 	aacircleRGBA(m_renderer, x, y, rad, m_color.r, m_color.g, m_color.b, m_color.a);
+	SDL_SetRenderTarget(m_renderer, NULL);
 }
 
 void PaintContext::FillEllipse(int16_t x, int16_t y, int16_t rx, int16_t ry) {
-
-	x += m_bounds.x;
-	y += m_bounds.y;
-
-	filledEllipseRGBA(m_renderer, x, y, rx, ry, m_color.r, m_color.g, m_color.b, m_color.a);
+	SDL_SetRenderTarget(m_renderer, m_texture);
+	aaFilledEllipseRGBA(m_renderer, x, y, rx, ry, m_color.r, m_color.g, m_color.b, m_color.a);
+	SDL_SetRenderTarget(m_renderer, NULL);
 }
 
 void PaintContext::DrawEllipse(int16_t x, int16_t y, int16_t rx, int16_t ry) {
-
-	x += m_bounds.x;
-	y += m_bounds.y;
-
+	SDL_SetRenderTarget(m_renderer, m_texture);
 	aaellipseRGBA(m_renderer, x, y, rx, ry, m_color.r, m_color.g, m_color.b, m_color.a);
+	SDL_SetRenderTarget(m_renderer, NULL);
 }
 
 text_t * PaintContext::PrepareBlendedText(int16_t x, int16_t y, char * str) {
@@ -143,8 +155,23 @@ void PaintContext::DestroyText(text_t * text) {
 }
 
 void PaintContext::DrawText(text_t * text, SDL_Rect * src, SDL_Rect * dst) {
-	SDL_Rect dst_modded = {m_bounds.x + dst->x, m_bounds.y + dst->y, dst->w, dst->h};
+	SDL_Rect dst_modded = {dst->x, dst->y, dst->w, dst->h};
 
+	SDL_SetRenderTarget(m_renderer, m_texture);
 	if(SDL_RenderCopy(m_renderer, text->tex_text, src, &dst_modded) == -1)
 		std::cerr << "ERROR: " << SDL_GetError() << std::endl;
+	SDL_SetRenderTarget(m_renderer, NULL);
+}
+
+void PaintContext::PaintScreen() {
+	SDL_SetRenderTarget(m_renderer, NULL);
+
+	SDL_Rect src = {0, 0, m_bounds.w, m_bounds.h};
+	SDL_Rect dst = {m_bounds.x, m_bounds.y, m_bounds.w, m_bounds.h};
+
+	SDL_RenderCopy(m_renderer, m_texture, &src, &dst);
+}
+
+SDL_Texture * PaintContext::GetTexture() {
+	return m_texture;
 }

@@ -24,7 +24,8 @@ class PaintContext {
 
 		TTF_Font *	m_font;
 
-		SDL_Renderer * m_renderer;
+		SDL_Renderer *	m_renderer;
+		SDL_Texture *	m_texture;
 
 		text_t *	PrepareText(int16_t x, int16_t y, char * str, SDL_Surface * surf);
 		void		PrepareRect(SDL_Rect * rect, SDL_Rect * rect_out);
@@ -47,6 +48,9 @@ class PaintContext {
 
 		void FillEllipse(int16_t x, int16_t y, int16_t rx, int16_t ry);
 		void DrawEllipse(int16_t x, int16_t y, int16_t rx, int16_t ry);
+
+		void PaintScreen();
+		SDL_Texture * GetTexture();
 
 		/**
 		 * For every Text, this Method should only be called once. As it is

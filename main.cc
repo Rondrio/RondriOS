@@ -8,6 +8,8 @@
 #include <X11/XKBlib.h>
 #include <X11/X.h>
 
+#include <signal.h>
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL2_gfxPrimitives.h>
 
@@ -37,6 +39,10 @@
  * Border Blocks
  *
  * */
+
+static void sigterm(int i) {
+	exit(0);
+}
 
 static void quit(LCARS * lcars, Arg * arg) {
 	lcars->Exit(arg->i);
@@ -75,6 +81,10 @@ static KeyListener keylisteners[] = {
 };
 
 int main(int argc, char ** argv) {
+
+	//TODO: Improve
+	signal(SIGTERM, sigterm);
+	signal(SIGINT, sigterm);
 
 	Display * dpy = XOpenDisplay(NULL);
 
