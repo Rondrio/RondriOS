@@ -3,7 +3,7 @@
 #include <iostream>
 #include <SDL2/SDL.h>
 
-LCARS_Component::LCARS_Component(SDL_Rect rect) {
+LCARS_Component::LCARS_Component(SDL_Rect rect) : LCARS_ICP(false) {
 		m_bounds = rect;
 		m_has_pd_focus = false;
 		m_has_kb_focus = false;
@@ -74,16 +74,29 @@ int LCARS_Component::GetWidth() {
 	return m_bounds.w;
 }
 
-void LCARS_Component::Draw(SDL_Renderer * renderer) {
+void LCARS_Component::SetInterface(LCARS_Interface * interface) {
+	m_interface = interface;
+
+	for(int i = 0; i < m_children.Size(); ++i) {
+		m_children[i]->SetInterface(interface);
+	}
+}
+
+void LCARS_Component::Draw(SDL_Renderer * renderer, SDL_Texture * buffer) {
+		
+		if(!NeedsRepaint()) return;
+		
 		SDL_Rect abs = GetAbsoluteBounds();
 
-		PaintContext ctx(renderer, abs);
+		PaintContext ctx(renderer, buffer, abs);
 		Paint(&ctx);
 		ctx.PaintScreen();
 
 		for(int i = 0; i < m_children.Size(); ++i) {
-			m_children[i]->Draw(renderer);
+			m_children[i]->Draw(renderer, buffer);
 		}
+
+		m_needs_repaint = false;
 }
 
 LCARS_Component * LCARS_Component::ComponentAt(int x, int y) {
@@ -101,6 +114,10 @@ LCARS_Component * LCARS_Component::ComponentAt(int x, int y) {
 void LCARS_Component::AddChild(LCARS_Component * cmp) {
 	m_children.Add(cmp);
 	cmp->SetParent(this);
+
+	for(int i = 0; i < m_children.Size(); ++i) {
+		m_children[i]->SetInterface(m_interface);
+	}
 }
 
 void LCARS_Component::RemChild(LCARS_Component * cmp) {

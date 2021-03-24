@@ -2,6 +2,7 @@
 #define LCARS_INTERFACE_HH_
 
 #include <vector>
+#include <queue>
 #include <X11/Xlib.h>
 
 #include "simple_list.hh"
@@ -12,6 +13,7 @@
 /* Forward declaration of the LCARS_Screen */
 class LCARS_Screen;
 class LCARS_Window;
+class LCARS_Component;
 
 typedef struct window_move_t window_move_t;
 
@@ -29,8 +31,15 @@ class LCARS_Interface : public LCARS_ICP {
 
 	protected:
 
+		volatile bool	m_window_repaint;
+
+		SDL_Texture * m_screen_texture;
+		SDL_Texture * m_window_texture;
+
 		smp::list<LCARS_Window *>	 *	m_windows;
 		smp::list<LCARS_Component *> *	m_components;
+
+		std::queue<LCARS_Component *>	m_priority_repaints;
 
 		LCARS_Screen	*				m_lcars_screen;
 		SDL_Rect 						m_bounds;
@@ -43,10 +52,13 @@ class LCARS_Interface : public LCARS_ICP {
 		LCARS_Interface(int x, int y, int width, int height);
 
 	public:
-		virtual ~		LCARS_Interface	() {}
+		virtual ~		LCARS_Interface	() {
+
+		}
+
 		virtual void 	Remap			() = 0;
 
-		void Draw(SDL_Renderer * renderer);
+		void Draw			(SDL_Renderer * renderer);
 
 		void AttachToScreen(LCARS_Screen * screen);
 
@@ -56,7 +68,10 @@ class LCARS_Interface : public LCARS_ICP {
 		void AddComponent	(LCARS_Component * cmp);
 		void RemComponent	(LCARS_Component * cmp);
 
+		void AddPriorityRepaint(LCARS_Component * cmp);
+
 		void SetNeedsRepaint(bool b);
+		void SetNeedsWindowRepaint(bool b);
 
 		void				SetFocusedWindow	(Window w);
 		void				SetFocusedWindow	(LCARS_Window * w);

@@ -11,9 +11,18 @@
 #include "lcars_screen.hh"
 #include "lcars_keylistener.hh"
 
-struct SCREEN_INIT {
-	unsigned int screen_width;
-	unsigned int screen_height;
+
+struct frame_window_pair {
+	Window frame;
+	Window window;
+};
+
+struct window_decoration_settings {
+	uint8_t border_width;
+	uint8_t titlebar_height;
+
+	uint64_t border_color;
+	uint64_t titlebar_color;
 };
 
 class LCARS {
@@ -25,7 +34,12 @@ class LCARS {
 				LCARS_Screen 	*	m_active_lcars_screen;
 				Window				m_root;
 
-				smp::list<KeyListener *> * m_key_listeners;
+				window_decoration_settings m_wd_settings;
+
+				Window	m_focused_window;
+
+				smp::list<frame_window_pair>	m_fwpairs;
+				smp::list<KeyListener *> *		m_key_listeners;
 
 		volatile bool m_running;
 
@@ -51,6 +65,31 @@ class LCARS {
 		 * @return 0 if an error occurred.
 		 * */
 		int HandleEventSDL	(SDL_Event * ev);
+
+		/**
+		 * Performs a lookup for the FrameWindowPair corresponding to the given Parameter.
+		 * 
+		 * @param w Either the Frame-Window or the Framed-Window.
+		 * @return The Pair containing the Frame and the Window.
+		*/
+		frame_window_pair 	GetFrameWindowPair(Window w);
+		int					GetWindowCount	();
+
+		/**
+		 * Frames the given Window adds an entry of the resulting Pair to the
+		 * internal Registry.
+		 * 
+		 * @param w The Window to reparent into a Frame.
+		*/
+		void FrameWindow	(Window w);
+
+		/**
+		 * Removes the Frame around a Window.
+		 * @param w The Window to unframe.
+		*/
+		void UnframeWindow	(Window w);
+
+		frame_window_pair GetFocusedFrameWindowPair();
 
 		/**
 		 * Initializes the LCARS.

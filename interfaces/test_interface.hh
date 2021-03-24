@@ -2,6 +2,8 @@
 #define INTERFACES_TEST_INTERFACE_HH_
 
 #include <iostream>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 
 
@@ -9,66 +11,71 @@
 #include "../components/lcars_text_input.hh"
 #include "../components/lcars_label.hh"
 #include "../components/lcars_bigdeco.hh"
+#include "../components/lcars_image.hh"
 #include "../lcars_interface.hh"
 
 static TTF_Font * font;
 static char text[] = "SYSTEMS";
+static std::string font_path = "/home/cediw/Downloads/lcars_reference/LCARSGTJ3.ttf";
 
 class TestInterface : public LCARS_Interface {
 
 	public:
 		TestInterface(int x, int y, int width, int height) : LCARS_Interface(x, y, width, height) {
 
-			font = TTF_OpenFont("/usr/share/fonts/droid/DroidSans.ttf", 18);
+			font = TTF_OpenFont(font_path.c_str(), 18);
 
-			LCARS_Button_Rounded * rounded_btn = new LCARS_Button_Rounded(500, 100, 400, 50, font, text);
-			LCARS_Button_Rounded * rounded_btn2 = new LCARS_Button_Rounded(0, 0, 200, 100, font, text);
-			LCARS_Button_Rounded * rounded_btn3 = new LCARS_Button_Rounded(0, 0, 200, 100, font, text);
-			LCARS_Button_Rounded * rounded_btn4 = new LCARS_Button_Rounded(0, 0, 200, 100, font, text);
-			//rounded_btn->AddChild(rounded_btn2);
-			//AddComponent(rounded_btn);
+			LCARS_Button_Rounded * btn1 = new LCARS_Button_Rounded(20, 20 + 400 + 5, 200, 80, font, "Reboot");
+			btn1->SetRoundLeft(false);
+			btn1->SetRoundRight(false);
 
-			rounded_btn4->SetRoundLeft(false);
-			rounded_btn4->SetRoundRight(false);
+			LCARS_Button_Rounded * btn2 = new LCARS_Button_Rounded(20, 20 + 400 + 80 + 10, 200, 60, font, "Shutdown");
+			btn2->SetRoundLeft(false);
+			btn2->SetRoundRight(false);
 
-			rounded_btn3->SetRoundLeft(false);
-			rounded_btn3->SetRoundRight(false);
+			SDL_Surface * base_img = LCARS_Image::LoadImage("/home/cediw/Downloads/lcars_reference/sf-logo.jpg");
+			LCARS_Image * img1 = new LCARS_Image(500, 500, base_img->w, base_img->h, base_img);
 
-			rounded_btn2->SetRoundLeft(false);
-			rounded_btn2->SetRoundRight(false);
-
-			rounded_btn->SetRoundLeft(false);
-			rounded_btn->SetRoundRight(false);
-
-			LCARS_Text_Input * tip = new LCARS_Text_Input(500, 500, 200, 40, font, "Authorization");
-			//AddComponent(tip);
-
-			LCARS_Label * label = new LCARS_Label(700, 100, 100, 50, "/home/cediw/Downloads/lcars_reference/okuda/Okuda.otf", "LABEL Text");
-			label->SetFontColor({0, 0, 0, 255});
-			//AddComponent(label);
-
-			LCARS_BigDeco * bd = new LCARS_BigDeco(0, 0, {
-					80,
-					1600,
-					800,
-					300,
-					50,
+			LCARS_BigDeco * topdeco = new LCARS_BigDeco(20, 20, {
+					60,
+					2560 - 40,
+					400,
 					200,
-					BIGDECO_ORIENTATION::ARM_UP_RIGHT
+					60,
+					40,
+
+					BIGDECO_ORIENTATION::ARM_DOWN_LEFT
 			});
 
-			AddComponent(bd);
-			//AddComponent(rounded_btn);
+			LCARS_BigDeco * botdeco = new LCARS_BigDeco(20, 400+80+60+35, {
+					60,
+					2560 - 40,
+					1440 - (20 + 400 + 80 + 60 + 20),
+					200,
+					60,
+					40,
 
-			bd->SetLabel(label, LABEL_POSITION::IN_ARM, 10);
+					BIGDECO_ORIENTATION::ARM_UP_LEFT
+			});
 
-			//AddComponent(rounded_btn);
-//			bd->AddButton(rounded_btn4);
-//			bd->AddButton(rounded_btn3);
-//			bd->AddButton(rounded_btn2);
-//			bd->AddButton(rounded_btn);
+			LCARS_Label * lbl1 = new LCARS_Label(0, 0, 10, 35, font_path, "LCARS PRE-ALPHA");
+			LCARS_Label * lbl2 = new LCARS_Label(0, 0, 10, 10, font_path, "ENGINEERING");
 
-			//rounded_btn2->SetPosX(100);
+			topdeco->SetLabel(lbl1, BIGDECO_LABELPOS::IN_ARM, -10);
+			topdeco->SetLabel(lbl2, BIGDECO_LABELPOS::IN_BASE, 5);
+
+
+
+			topdeco->SetExtension(BIGDECO_EXTENSION::ROUNDED);
+//			topdeco->AddButton(btn1);
+//			topdeco->AddButton(btn2);
+
+			AddComponent(topdeco);
+			AddComponent(botdeco);
+			AddComponent(btn1);
+			AddComponent(btn2);
+
+			AddComponent(img1);
 		}
 
 		void Remap() {
@@ -81,6 +88,11 @@ class TestInterface : public LCARS_Interface {
 
 				lcars_win->Move(xp[i%4], yp[i%4]);
 			}*/
+		}
+
+		LCARS_Interface& operator=(LCARS_Interface& rhs) {
+			exit(0);
+			return rhs;
 		}
 
 };

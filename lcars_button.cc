@@ -27,9 +27,11 @@ void LCARS_Button::HandleSDLEvent(SDL_Event * ev) {
 void LCARS_Button::HandleCMPEvent(CMP_EVT_TYPE type) {
 	switch(type) {
 		case PD_FOCUS:
+			std::cout << m_text << " FOCUS\n";
 			SetNeedsRepaint(true);
 			break;
 		case PD_BLUR:
+			std::cout << m_text << " BLUR\n";
 			SetNeedsRepaint(true);
 			break;
 	}

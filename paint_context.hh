@@ -25,17 +25,23 @@ class PaintContext {
 		TTF_Font *	m_font;
 
 		SDL_Renderer *	m_renderer;
+		SDL_Texture *	m_buffer;
 		SDL_Texture *	m_texture;
+
+		int m_flip;
 
 		text_t *	PrepareText(int16_t x, int16_t y, char * str, SDL_Surface * surf);
 		void		PrepareRect(SDL_Rect * rect, SDL_Rect * rect_out);
 
 	public:
 			PaintContext() = delete;
-			PaintContext(SDL_Renderer * renderer, SDL_Rect bounds);
+			PaintContext(SDL_Renderer * renderer, SDL_Texture * buffer, SDL_Rect bounds);
 		~	PaintContext();
 
 		SDL_Rect const * GetOffset();
+
+		void FlipVertically();
+		void FlipHorizontally();
 
 		void SetColor	(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 		void SetFont	(TTF_Font * font);
@@ -48,6 +54,8 @@ class PaintContext {
 
 		void FillEllipse(int16_t x, int16_t y, int16_t rx, int16_t ry);
 		void DrawEllipse(int16_t x, int16_t y, int16_t rx, int16_t ry);
+
+		void DrawImage(int x, int y, int w, int h, SDL_Surface * img);
 
 		void PaintScreen();
 		SDL_Texture * GetTexture();

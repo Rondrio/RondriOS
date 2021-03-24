@@ -10,8 +10,10 @@ LCARS_Screen::LCARS_Screen(Display * dpy, int x, int y, int width, int height) {
 	m_width		= width;
 	m_height	= height;
 
-	m_sdl_window	= SDL_CreateWindow("LCARS SCREEN", x, y, width, height, SDL_WINDOW_SHOWN/*|SDL_WINDOW_FULLSCREEN*/);
-	m_sdl_renderer	= SDL_CreateRenderer(m_sdl_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+	m_sdl_window		= SDL_CreateWindow("LCARS SCREEN", x, y, width, height, SDL_WINDOW_SHOWN/*|SDL_WINDOW_FULLSCREEN*/);
+	m_sdl_renderer		= SDL_CreateRenderer(m_sdl_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+
+	//SDL_SetRenderDrawBlendMode(m_sdl_renderer, SDL_BLENDMODE_BLEND);
 
 	m_interface = nullptr;
 }
@@ -27,15 +29,14 @@ void LCARS_Screen::Draw() {
 	/* --------------------------------------- */
 
 
-	if(m_interface)
+	if(m_interface) {
 		m_interface->Draw(m_sdl_renderer);
+	}
 
 	/*SDL_SetRenderDrawColor(m_sdl_renderer, 100, 100, 200, 255);
 	SDL_Rect r = {0, 0, 400, 400};
 
 	SDL_RenderFillRect(m_sdl_renderer, &r);*/
-
-	SDL_SetRenderDrawColor(m_sdl_renderer, 0, 0, 0, 255);
 
 	/* --------------------------------------- */
 	//SDL_RenderPresent(m_sdl_renderer);

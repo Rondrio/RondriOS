@@ -2,7 +2,7 @@
 
 #include "../lcars_colors.hh"
 
-LCARS_BigDeco::LCARS_BigDeco(int x, int y, BigDecoStats stats) : LCARS_Component({x, y, stats.base_width + stats.main_arc_ry*c_arc_factor, stats.base_height + stats.arm_height}) {
+LCARS_BigDeco::LCARS_BigDeco(int x, int y, BigDecoStats stats) : LCARS_Component({x, y, stats.base_width + stats.main_arc_ry*c_arc_factor, (stats.arm_height - stats.main_arc_ry) > stats.base_height + stats.small_arc_ry ? stats.arm_height - stats.main_arc_ry + stats.main_arc_ry : stats.base_height + stats.small_arc_ry + stats.main_arc_ry}) {
 	m_arm_height	= stats.arm_height;
 	m_arm_width		= stats.arm_width;
 
@@ -18,8 +18,8 @@ LCARS_BigDeco::LCARS_BigDeco(int x, int y, BigDecoStats stats) : LCARS_Component
 	m_ext_arc_ry = m_base_height/2;
 	m_ext_arc_rx = m_ext_arc_ry*c_ellipse_factor;
 
-	m_labels[(int) LABEL_POSITION::IN_ARM] = nullptr;
-	m_labels[(int) LABEL_POSITION::IN_BASE] = nullptr;
+	m_labels[(int) BIGDECO_LABELPOS::IN_ARM] = nullptr;
+	m_labels[(int) BIGDECO_LABELPOS::IN_BASE] = nullptr;
 	m_base_label_y_adjustment = 0;
 
 	m_button_margin	= 5;
@@ -27,6 +27,8 @@ LCARS_BigDeco::LCARS_BigDeco(int x, int y, BigDecoStats stats) : LCARS_Component
 
 	m_orientation = stats.orientation;
 	m_color = COL_GOLD;
+
+	m_extension = BIGDECO_EXTENSION::ROUNDED;
 }
 
 LCARS_BigDeco::~LCARS_BigDeco() {
@@ -34,143 +36,89 @@ LCARS_BigDeco::~LCARS_BigDeco() {
 }
 
 SDL_Rect LCARS_BigDeco::CalcBase() {
-	switch(m_orientation) {
-		case BIGDECO_ORIENTATION::ARM_UP_LEFT: {
-			return {m_arc_rx, m_arm_height, m_base_width-m_ext_arc_rx, m_base_height};
+
+	int width = 0;
+
+	switch(m_extension) {
+		case BIGDECO_EXTENSION::FLAT: {
+			width = m_base_width-m_arc_rx;
+			break;
 		}
 
-		case BIGDECO_ORIENTATION::ARM_DOWN_LEFT: {
-			return {m_arc_rx, 0, m_base_width-m_ext_arc_rx, m_base_height};
+		case BIGDECO_EXTENSION::ROUNDED: {
+			width = m_base_width-m_arc_rx-m_ext_arc_rx;
+			break;
 		}
 
-		case BIGDECO_ORIENTATION::ARM_UP_RIGHT: {
-
-			return {m_ext_arc_rx, m_arm_height, m_base_width-m_ext_arc_rx, m_base_height};
-		}
-
-		case BIGDECO_ORIENTATION::ARM_DOWN_RIGHT: {
-
-			return {m_ext_arc_rx, 0, m_base_width-m_ext_arc_rx, m_base_height};
+		case BIGDECO_EXTENSION::SHARP: {
+			width = m_base_width - m_arc_rx - m_base_height/c_ellipse_factor;
+			break;
 		}
 	}
 
-	return {};
+	return {m_arc_rx, 0, width, m_base_height};
 }
 
 SDL_Rect LCARS_BigDeco::CalcUnderMainArc() {
-	switch(m_orientation) {
-		case BIGDECO_ORIENTATION::ARM_UP_LEFT: {
-			return {0, m_arm_height, m_arm_width, m_base_height-m_arc_ry+1};
-		}
+	int height = 2*m_arc_ry-m_arm_height;
+	height = height < 0 ? 0 : height;
 
-		case BIGDECO_ORIENTATION::ARM_DOWN_LEFT: {
-			return {0, m_arc_ry-1, m_arm_width, m_base_height-m_arc_ry+1};
-		}
+	return {0, m_arm_height, m_arm_width, height};
+}
 
-		case BIGDECO_ORIENTATION::ARM_UP_RIGHT: {
-
-			return {m_base_width-m_arc_rx+m_ext_arc_rx, m_arm_height, m_arm_width, m_base_height-m_arc_ry+1};
-		}
-
-		case BIGDECO_ORIENTATION::ARM_DOWN_RIGHT: {
-
-			return {m_base_width-m_arc_rx+m_ext_arc_rx,  m_arc_ry-1, m_arm_width, m_base_height-m_arc_ry+1};
-		}
-	}
-
-	return {};
+SDL_Rect LCARS_BigDeco::CalcUnderMainArc2() {
+	return {m_arm_width, m_base_height, m_arc_rx*2-m_arm_width, m_arc_ry*2+m_base_height};
 }
 
 SDL_Rect LCARS_BigDeco::CalcMainArc() {
-	switch(m_orientation) {
-		case BIGDECO_ORIENTATION::ARM_UP_LEFT: {
-			return {m_arc_rx, m_arm_height+m_base_height-m_arc_ry, m_arc_rx, m_arc_ry};
-		}
-
-		case BIGDECO_ORIENTATION::ARM_DOWN_LEFT: {
-			return {m_arc_rx, m_arc_ry-1, m_arc_rx, m_arc_ry};
-		}
-
-		case BIGDECO_ORIENTATION::ARM_UP_RIGHT: {
-
-			return {m_base_width-m_arc_rx+m_arc_rx, m_arm_height+m_base_height-m_arc_ry, m_arc_rx, m_arc_ry};
-		}
-
-		case BIGDECO_ORIENTATION::ARM_DOWN_RIGHT: {
-
-			return {m_base_width-m_arc_rx+m_arc_rx, m_arc_ry-1, m_arc_rx, m_arc_ry};
-		}
-	}
-
-	return {};
+	return {m_arc_rx, m_arc_ry, m_arc_rx, m_arc_ry};
 }
 
 SDL_Rect LCARS_BigDeco::CalcArm() {
-	switch(m_orientation) {
-		case BIGDECO_ORIENTATION::ARM_UP_LEFT: {
-			return {0, 0, m_arm_width, m_arm_height};
-		}
+	int height = m_arm_height - m_arc_ry;
+	height = height > m_base_height + m_arc_s_ry ? height : m_base_height + m_arc_s_ry;
 
-		case BIGDECO_ORIENTATION::ARM_DOWN_LEFT: {
-			return {0, m_base_height, m_arm_width, m_arm_height};
-		}
-
-		case BIGDECO_ORIENTATION::ARM_UP_RIGHT: {
-
-			return {m_base_width-m_arm_width+m_arc_rx, 0, m_arm_width, m_arm_height};
-		}
-
-		case BIGDECO_ORIENTATION::ARM_DOWN_RIGHT: {
-
-			return {m_base_width-m_arm_width+m_arc_rx, m_base_height, m_arm_width, m_arm_height};
-		}
-	}
-
-	return {};
+	return {0, m_arc_ry, m_arm_width, height};
 }
 
 SDL_Rect LCARS_BigDeco::CalcUnderSmallArc() {
-	switch(m_orientation) {
-		case BIGDECO_ORIENTATION::ARM_UP_LEFT: {
-			return {m_arm_width, m_arm_height-m_arc_s_ry, m_arc_s_rx, m_arc_s_ry};
-		}
+	int arm_main_arc_diff_x = m_arm_width - m_arc_rx;
+	int main_arc_base_diff_y = m_arc_ry - m_base_height;
 
-		case BIGDECO_ORIENTATION::ARM_DOWN_LEFT: {
-			return {m_arm_width, m_base_height, m_arc_s_rx, m_arc_s_ry};
-		}
+	arm_main_arc_diff_x = arm_main_arc_diff_x > 0 ? arm_main_arc_diff_x : 0;
+	main_arc_base_diff_y = main_arc_base_diff_y > 0 ? main_arc_base_diff_y : 0;
 
-		case BIGDECO_ORIENTATION::ARM_UP_RIGHT: {
+	int x = m_arm_width < m_arc_rx ? m_arm_width : m_arc_rx;
 
-			return {m_base_width-m_arm_width-m_arc_s_rx+m_arc_rx, m_arm_height-m_arc_s_ry, m_arc_s_rx, m_arc_s_ry};
-		}
-
-		case BIGDECO_ORIENTATION::ARM_DOWN_RIGHT: {
-
-			return {m_base_width-m_arm_width-m_arc_s_rx+m_arc_rx, m_base_height, m_arc_s_rx, m_arc_s_ry};
-		}
-	}
-
-	return {};
+	return {x, m_base_height, arm_main_arc_diff_x + m_arc_s_rx, main_arc_base_diff_y + m_arc_s_ry};
 }
 
-SDL_Rect LCARS_BigDeco::CalcExtensionArc() {
-	switch(m_orientation) {
-		case BIGDECO_ORIENTATION::ARM_UP_LEFT: {
-			return {m_base_width+m_arc_rx-m_ext_arc_rx, m_arm_height+m_base_height/2, m_ext_arc_rx, m_ext_arc_ry};
+SDL_Rect LCARS_BigDeco::CalcUnderSmallArc2() {
+	return {m_arm_width, m_base_height+m_arc_s_ry, m_arc_s_rx*2, m_arc_s_ry*2 + m_base_height};
+}
+
+SDL_Rect LCARS_BigDeco::CalcExtensionArc(PaintContext * paintctx) {
+
+	paintctx->SetColor(m_color.r, m_color.g, m_color.b, m_color.a);
+
+	switch(m_extension) {
+		case BIGDECO_EXTENSION::ROUNDED: {
+			paintctx->FillEllipse(m_base_width-m_ext_arc_rx, m_base_height/2, m_ext_arc_rx, m_ext_arc_ry);
+			break;
 		}
 
-		case BIGDECO_ORIENTATION::ARM_DOWN_LEFT: {
-			return {m_base_width+m_arc_rx-m_ext_arc_rx, m_base_height/2, m_ext_arc_rx, m_ext_arc_ry};
+		case BIGDECO_EXTENSION::FLAT: {
+			break;
 		}
 
-		case BIGDECO_ORIENTATION::ARM_UP_RIGHT: {
+		case BIGDECO_EXTENSION::SHARP: {
 
-			return {m_ext_arc_rx, m_arm_height+m_base_height/2, m_ext_arc_rx, m_ext_arc_ry};
-		}
+			paintctx->FillEllipse(m_base_width - m_base_height/c_ellipse_factor, m_base_height, m_base_height/c_ellipse_factor, m_base_height);
 
-		case BIGDECO_ORIENTATION::ARM_DOWN_RIGHT: {
-
-			return {m_ext_arc_rx, m_base_height/2, m_ext_arc_rx, m_ext_arc_ry};
+			SDL_Rect black = {m_base_width - m_base_height/c_ellipse_factor*2, m_base_height, m_base_height/c_ellipse_factor*2, m_base_height/c_ellipse_factor};
+			paintctx->SetColor(0, 0, 0, 255);
+			paintctx->FillRect(&black);
+			break;
 		}
 	}
 
@@ -178,38 +126,21 @@ SDL_Rect LCARS_BigDeco::CalcExtensionArc() {
 }
 
 SDL_Rect LCARS_BigDeco::CalcSmallArc() {
-	switch(m_orientation) {
-		case BIGDECO_ORIENTATION::ARM_UP_LEFT: {
-			return {m_arm_width+m_arc_s_rx, m_arm_height-m_arc_s_ry, m_arc_s_rx, m_arc_s_ry};
-		}
-
-		case BIGDECO_ORIENTATION::ARM_DOWN_LEFT: {
-			return {m_arm_width+m_arc_s_rx, m_base_height+m_arc_s_ry, m_arc_s_rx, m_arc_s_ry};
-		}
-
-		case BIGDECO_ORIENTATION::ARM_UP_RIGHT: {
-
-			return {m_base_width-m_arm_width-m_arc_s_rx+m_arc_rx, m_arm_height-m_arc_s_ry, m_arc_s_rx, m_arc_s_ry};
-		}
-
-		case BIGDECO_ORIENTATION::ARM_DOWN_RIGHT: {
-
-			return {m_base_width-m_arm_width-m_arc_s_rx+m_arc_rx, m_base_height+m_arc_s_ry, m_arc_s_rx, m_arc_s_ry};
-		}
-	}
-
-	return {};
+	return {m_arm_width + m_arc_s_rx, m_base_height+m_arc_s_ry, m_arc_s_rx, m_arc_s_ry};
 }
 
 SDL_Rect LCARS_BigDeco::CalcButtonsContainer() {
 
 	int count = m_buttons.Size();
-	int container_width = m_base_width - m_arm_width - m_base_height*2 + m_button_margin*(count + 1);
+	int container_width = m_base_width - m_arc_s_rx - m_arm_width - m_base_height*2 + m_button_margin*(count + 1);
 	int container_height = m_base_height;
+
+	int height = m_arm_height - m_arc_ry;
+		height = height > m_base_height + m_arc_s_ry ? height : m_base_height + m_arc_s_ry;
 
 	switch(m_orientation) {
 		case BIGDECO_ORIENTATION::ARM_UP_LEFT: {
-			return {m_arm_width+m_arc_s_rx, m_arm_height, container_width, container_height};
+			return {m_arm_width+m_arc_s_rx, height + m_arc_ry - m_base_height, container_width, container_height};
 		}
 
 		case BIGDECO_ORIENTATION::ARM_DOWN_LEFT: {
@@ -239,42 +170,61 @@ void LCARS_BigDeco::Paint(PaintContext * paintctx) {
 	paintctx->FillRect(&main_base);
 
 
-	SDL_Rect fill_under_main_arc = CalcUnderMainArc();
-	paintctx->FillRect(&fill_under_main_arc);
-
 
 	SDL_Rect main_arc = CalcMainArc();
 	paintctx->FillEllipse(main_arc.x, main_arc.y, main_arc.w, main_arc.h);
 
+	paintctx->SetColor(0, 0, 0, 255);
+
+	SDL_Rect fill_under_main_arc2 = CalcUnderMainArc2();
+	paintctx->FillRect(&fill_under_main_arc2);
+
+	paintctx->SetColor(m_color.r, m_color.g, m_color.b, m_color.a);
 
 	SDL_Rect arm_rect = CalcArm();
 	paintctx->FillRect(&arm_rect);
 
-
 	SDL_Rect fill_small_arc = CalcUnderSmallArc();
 	paintctx->FillRect(&fill_small_arc);
 
-
-	SDL_Rect extension_ellipse = CalcExtensionArc();
-	paintctx->FillEllipse (extension_ellipse.x, extension_ellipse.y, extension_ellipse.w, extension_ellipse.h);
+	paintctx->SetColor(0, 0, 0, 255);
+	SDL_Rect fill_small_arc2 = CalcUnderSmallArc2();
+	paintctx->FillRect(&fill_small_arc2);
 
 	SDL_Rect small_arc = CalcSmallArc();
-	paintctx->SetColor(0, 0, 0, 255);
 	paintctx->FillEllipse(small_arc.x, small_arc.y, small_arc.w, small_arc.h);
 
+	CalcExtensionArc(paintctx);
 
 	paintctx->SetColor(0, 0, 0, 255);
-
 	for(int i = 0; i < m_buttons.Size(); ++i) {
 		LCARS_Button * btn = m_buttons[i];
-		SDL_Rect fill = {btn->GetPosX() - m_button_margin, btn->GetPosY(), btn->GetWidth() + m_button_margin*2, btn->GetHeight()};
+		SDL_Rect fill = {btn->GetPosX() - m_button_margin, 0, btn->GetWidth() + m_button_margin*2, btn->GetHeight()};
 		paintctx->FillRect(&fill);
 	}
 
-	LCARS_Label * lbl = m_labels[(int) LABEL_POSITION::IN_BASE];
+	LCARS_Label * lbl = m_labels[(int) BIGDECO_LABELPOS::IN_BASE];
 	if(lbl) {
-		SDL_Rect r = {lbl->GetPosX() - m_label_margin, lbl->GetPosY() + m_base_label_y_adjustment, lbl->GetWidth() + m_label_margin*3, m_base_height};
+		SDL_Rect r = {lbl->GetPosX() - m_label_margin, 0, lbl->GetWidth() + m_label_margin*3, m_base_height};
 		paintctx->FillRect(&r);
+	}
+
+	switch(m_orientation) {
+		case BIGDECO_ORIENTATION::ARM_DOWN_RIGHT: {
+			paintctx->FlipHorizontally();
+			break;
+		}
+		case BIGDECO_ORIENTATION::ARM_UP_RIGHT: {
+			paintctx->FlipHorizontally();
+			paintctx->FlipVertically();
+			break;
+		}
+		case BIGDECO_ORIENTATION::ARM_UP_LEFT: {
+			paintctx->FlipVertically();
+			break;
+		}
+		case BIGDECO_ORIENTATION::ARM_DOWN_LEFT:
+			break;
 	}
 }
 
@@ -283,14 +233,14 @@ void LCARS_BigDeco::SetOrientation(BIGDECO_ORIENTATION o) {
 	SetNeedsRepaint(true);
 }
 
-void LCARS_BigDeco::SetLabel(LCARS_Label * label, LABEL_POSITION label_pos, int y_adjustment) {
+void LCARS_BigDeco::SetLabel(LCARS_Label * label, BIGDECO_LABELPOS label_pos, int y_adjustment) {
 
-	if(label_pos == LABEL_POSITION::IN_BASE && m_buttons.Size() > 0)
+	if(label_pos == BIGDECO_LABELPOS::IN_BASE && m_buttons.Size() > 0)
 		return;
 
 	m_labels[(int) label_pos] = label;
 
-	if(label_pos == LABEL_POSITION::IN_BASE) {
+	if(label_pos == BIGDECO_LABELPOS::IN_BASE) {
 
 		/* Save this for black Outline Calculations */
 		m_base_label_y_adjustment = y_adjustment;
@@ -301,7 +251,7 @@ void LCARS_BigDeco::SetLabel(LCARS_Label * label, LABEL_POSITION label_pos, int 
 		if(m_orientation == BIGDECO_ORIENTATION::ARM_DOWN_RIGHT || m_orientation == BIGDECO_ORIENTATION::ARM_UP_RIGHT)
 			label->SetPosX(container.x);
 		else
-			label->SetPosX(container.x + container.w - label->GetWidth() - m_arc_rx - m_base_height);
+			label->SetPosX(container.x + container.w - label->GetWidth());
 
 		label->SetPosY(container.y - y_adjustment);
 
@@ -313,7 +263,7 @@ void LCARS_BigDeco::SetLabel(LCARS_Label * label, LABEL_POSITION label_pos, int 
 			label->SetPosX(m_base_width - label->GetWidth()/2);
 
 		if(m_orientation == BIGDECO_ORIENTATION::ARM_DOWN_LEFT || m_orientation == BIGDECO_ORIENTATION::ARM_DOWN_RIGHT)
-			label->SetPosY(m_base_height + m_arm_height - label->GetHeight() + y_adjustment);
+			label->SetPosY(m_arm_height - label->GetHeight() + y_adjustment);
 		else
 			label->SetPosY(m_label_margin + y_adjustment);
 	}
@@ -325,7 +275,7 @@ void LCARS_BigDeco::SetLabel(LCARS_Label * label, LABEL_POSITION label_pos, int 
 
 void LCARS_BigDeco::AddButton(LCARS_Button * button) {
 
-	if(m_labels[(int) LABEL_POSITION::IN_BASE])
+	if(m_labels[(int) BIGDECO_LABELPOS::IN_BASE])
 		return;
 
 	m_buttons.Add(button);
@@ -348,6 +298,11 @@ void LCARS_BigDeco::AddButton(LCARS_Button * button) {
 		btn->SetPosY(container.y);
 	}
 
+	SetNeedsRepaint(true);
+}
+
+void LCARS_BigDeco::SetExtension(BIGDECO_EXTENSION ext) {
+	m_extension = ext;
 	SetNeedsRepaint(true);
 }
 

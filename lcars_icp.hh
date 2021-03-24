@@ -6,10 +6,19 @@
 class LCARS_ICP {
 	protected:
 		volatile bool m_needs_repaint = true;
+		bool m_is_interface;
 
 	public:
+		LCARS_ICP(bool is_interface) {
+			m_is_interface = is_interface;
+		}
+
 		virtual ~LCARS_ICP() {
 
+		}
+
+		bool IsInterface() {
+			return m_is_interface;
 		}
 
 		virtual void SetNeedsRepaint(bool b) {

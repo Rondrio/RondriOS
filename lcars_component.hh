@@ -6,6 +6,7 @@
 #include "simple_list.hh"
 #include "paint_context.hh"
 #include "lcars_icp.hh"
+#include "lcars_interface.hh"
 
 enum CMP_EVT_TYPE {
 	KB_FOCUS, KB_BLUR, PD_FOCUS, PD_BLUR
@@ -35,6 +36,7 @@ class LCARS_Component : public LCARS_ICP {
 		volatile bool							m_has_kb_focus;
 
 		LCARS_ICP * m_parent = nullptr;
+		LCARS_Interface * m_interface = nullptr;
 
 		LCARS_Component(SDL_Rect rect);
 
@@ -65,7 +67,9 @@ class LCARS_Component : public LCARS_ICP {
 		virtual void	SetWidth(int w);
 		virtual int		GetWidth();
 
-		void Draw(SDL_Renderer * renderer);
+		void SetInterface(LCARS_Interface * interface);
+
+		void Draw(SDL_Renderer * renderer, SDL_Texture * buffer);
 		LCARS_Component * ComponentAt(int x, int y);
 
 		virtual void AddChild(LCARS_Component * cmp);

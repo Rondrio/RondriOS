@@ -13,7 +13,11 @@ enum struct BIGDECO_ORIENTATION {
 	ARM_UP_LEFT, ARM_DOWN_LEFT, ARM_UP_RIGHT, ARM_DOWN_RIGHT
 };
 
-enum struct LABEL_POSITION {
+enum struct BIGDECO_EXTENSION {
+	ROUNDED, SHARP, FLAT
+};
+
+enum struct BIGDECO_LABELPOS {
 	IN_ARM, IN_BASE
 };
 
@@ -57,15 +61,18 @@ class LCARS_BigDeco : public LCARS_Component {
 		uint16_t m_label_margin;
 
 		BIGDECO_ORIENTATION m_orientation;
+		BIGDECO_EXTENSION m_extension;
 
 		SDL_Color m_color;
 
 		SDL_Rect CalcBase();
 		SDL_Rect CalcUnderMainArc();
+		SDL_Rect CalcUnderMainArc2();
 		SDL_Rect CalcMainArc();
 		SDL_Rect CalcArm();
 		SDL_Rect CalcUnderSmallArc();
-		SDL_Rect CalcExtensionArc();
+		SDL_Rect CalcUnderSmallArc2();
+		SDL_Rect CalcExtensionArc(PaintContext * paintctx);
 		SDL_Rect CalcSmallArc();
 		SDL_Rect CalcButtonsContainer();
 
@@ -85,7 +92,7 @@ class LCARS_BigDeco : public LCARS_Component {
 		 * @param label The Label to set.
 		 * @param label_pos The Position to where the Label will be set.
 		 * */
-		void SetLabel(LCARS_Label * label, LABEL_POSITION label_pos, int y_adjustment);
+		void SetLabel(LCARS_Label * label, BIGDECO_LABELPOS label_pos, int y_adjustment);
 
 		/**
 		 * Adds a Button to the Base of the Decoration.
@@ -95,6 +102,8 @@ class LCARS_BigDeco : public LCARS_Component {
 		 * @param button The Button that will be added to the Base.
 		 * */
 		void AddButton(LCARS_Button * button);
+
+		void SetExtension(BIGDECO_EXTENSION ext);
 
 		void Paint(PaintContext * paintctx) override;
 
