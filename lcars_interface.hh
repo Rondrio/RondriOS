@@ -10,7 +10,7 @@
 #include "lcars_window.hh"
 #include "lcars_component.hh"
 
-/* Forward declaration of the LCARS_Screen */
+/* Forward declarations */
 class LCARS_Screen;
 class LCARS_Window;
 class LCARS_Component;
@@ -52,9 +52,7 @@ class LCARS_Interface : public LCARS_ICP {
 		LCARS_Interface(int x, int y, int width, int height);
 
 	public:
-		virtual ~		LCARS_Interface	() {
-
-		}
+		virtual ~		LCARS_Interface	();
 
 		virtual void 	Remap			() = 0;
 

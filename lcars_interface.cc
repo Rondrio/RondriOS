@@ -21,6 +21,8 @@ LCARS_Interface::LCARS_Interface(int x, int y, int width, int height) : LCARS_IC
 	m_windows		= new smp::list<LCARS_Window *>();
 	m_components	= new smp::list<LCARS_Component *>();
 
+
+	/* TODO: Remove every trace of "Drawn" Window-Decorations */
 	m_window_move.moving_enabled = false;
 	m_window_move.window = nullptr;
 	m_window_move.x_offset = 0;
@@ -28,6 +30,17 @@ LCARS_Interface::LCARS_Interface(int x, int y, int width, int height) : LCARS_IC
 
 	m_screen_texture = nullptr;
 	m_window_texture = nullptr;
+}
+
+LCARS_Interface::~LCARS_Interface() {
+	delete m_windows;
+	delete m_components;
+
+	if(m_screen_texture)
+		SDL_DestroyTexture(m_screen_texture);
+
+	if(m_window_texture)
+		SDL_DestroyTexture(m_window_texture);
 }
 
 void LCARS_Interface::Draw(SDL_Renderer * renderer) {

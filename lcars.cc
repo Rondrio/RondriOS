@@ -30,8 +30,6 @@ LCARS::LCARS(Display * dpy) {
 	s_x_error_handler		= XSetErrorHandler(LCARS::ErrorHandler);
 
 	m_key_listeners = new smp::list<KeyListener *>();
-
-	m_wd_settings = {2, 25, 0x000000, 0x0000ff};
 }
 
 LCARS::~LCARS() {
@@ -126,8 +124,24 @@ int LCARS::HandleEventX(XEvent * ev) {
 			wc.x = 0	+ 10;
 			wc.y = 0	+ 10;
 
+			XWindowAttributes wa;
+			XGetWindowAttributes(m_dpy, mre.window, &wa);
+
+			wc.x = wa.x;
+			wc.y = wa.y;
+			wc.width	= wa.width;
+			wc.height	= wa.height;
+
+			if(wa.width <= 50)
+				wc.width = 50;
+
+			if(wa.height <= 50)
+				wc.height = 50;
+
 			XConfigureWindow(m_dpy, mre.window, CWX, &wc);
 			XConfigureWindow(m_dpy, mre.window, CWY, &wc);
+			XConfigureWindow(m_dpy, mre.window, CWWidth, &wc);
+			XConfigureWindow(m_dpy, mre.window, CWHeight, &wc);
 
 			XMapWindow(m_dpy, mre.window);
 
@@ -160,9 +174,8 @@ int LCARS::HandleEventX(XEvent * ev) {
 
 			XButtonPressedEvent bpe = ev->xbutton;
 
-			frame_window_pair fwp = GetFrameWindowPair(bpe.window);
-			XSetInputFocus(m_dpy, fwp.window, RevertToPointerRoot, CurrentTime);
-			m_focused_window = fwp.window;
+			XSetInputFocus(m_dpy, bpe.window, RevertToPointerRoot, CurrentTime);
+			m_focused_window = bpe.window;
 
 			grab_x = bpe.x_root;
 			grab_y = bpe.y_root;
@@ -177,6 +190,9 @@ int LCARS::HandleEventX(XEvent * ev) {
 				resize = true;
 			}
 
+			XRaiseWindow(m_dpy, bpe.window);
+
+			GetScreen()->GetInterface()->SetNeedsWindowRepaint(true);
 			break;
 		}
 
@@ -200,17 +216,28 @@ int LCARS::HandleEventX(XEvent * ev) {
 				int w = me.x_root - wa.x;
 				int h = me.y_root - wa.y;
 
-				if(w > 0 && h > 0) {
-
-					frame_window_pair fwp = GetFrameWindowPair(grabbed_frame);
-
-					XResizeWindow(m_dpy, grabbed_frame, w, h);
-					XResizeWindow(m_dpy, fwp.window, w, h + m_wd_settings.titlebar_height);
-				}
+				if(w > 0 && h > 0)
+					XResizeWindow(m_dpy, me.window, w, h);
 			}
 			
 			m_active_lcars_screen->GetInterface()->SetNeedsWindowRepaint(true);
 
+			break;
+		}
+
+		case ConfigureRequest: {
+			
+			XConfigureRequestEvent cre = ev->xconfigurerequest;
+			
+			XWindowChanges wc;
+			wc.x = cre.x;
+			wc.y = cre.y;
+			wc.height = cre.height;
+			wc.width = cre.width;
+			wc.sibling = cre.above;
+			wc.stack_mode = cre.detail;
+
+			XConfigureWindow(m_dpy, cre.window, cre.value_mask, &wc);
 			break;
 		}
 	}
@@ -223,59 +250,30 @@ int LCARS::HandleEventSDL(SDL_Event * ev) {
 	return 1;
 }
 
-frame_window_pair LCARS::GetFrameWindowPair(Window w) {
-	for(int i = 0; i < m_fwpairs.Size(); ++i)
-		if(m_fwpairs[i].window == w || m_fwpairs[i].frame == w)
-			return (m_fwpairs[i]);
-
-	return {0, 0};
-}
-
 int LCARS::GetWindowCount() {
-	return m_fwpairs.Size();
+	return m_windows.Size();
 }
 
 void LCARS::FrameWindow(Window w) {
 	XWindowAttributes x_window_attrs;
 	XGetWindowAttributes(m_dpy, w, &x_window_attrs);
 
-	const Window frame = XCreateSimpleWindow(
-		m_dpy,
-		m_root,
-		x_window_attrs.x,
-		x_window_attrs.y,
-		x_window_attrs.width,
-		x_window_attrs.height + m_wd_settings.titlebar_height,
-		m_wd_settings.border_width,
-		m_wd_settings.border_color,
-		m_wd_settings.titlebar_color
-	);
-
 	// 3. Select events on frame.
 	XSelectInput(
 		m_dpy,
-		frame,
+		w,
 		SubstructureRedirectMask | SubstructureNotifyMask);
 
 	// 4. Add client to save set, so that it will be restored and kept alive if we
 	// crash.
 	XAddToSaveSet(m_dpy, w);
 
-	// 5. Reparent client window.
-	XReparentWindow(
-		m_dpy,
-		w,
-		frame,
-		0, m_wd_settings.titlebar_height);
-
-	XMapWindow(m_dpy, frame);
-
 	XGrabButton(
 		m_dpy,
 		Button1,
 		Mod4Mask,
-		frame,
-		false,
+		w,
+		true,
 		ButtonPressMask | ButtonReleaseMask | ButtonMotionMask,
 		GrabModeAsync,
 		GrabModeAsync,
@@ -287,8 +285,8 @@ void LCARS::FrameWindow(Window w) {
 		m_dpy,
 		Button3,
 		Mod4Mask,
-		frame,
-		false,
+		w,
+		true,
 		ButtonPressMask | ButtonReleaseMask | ButtonMotionMask,
 		GrabModeAsync,
 		GrabModeAsync,
@@ -296,30 +294,18 @@ void LCARS::FrameWindow(Window w) {
 		None
 	);
 
-	m_fwpairs.Add({frame, w});
+	m_windows += w;
 }
 
 void LCARS::UnframeWindow(Window w) {
 
-	frame_window_pair fwp = GetFrameWindowPair(w);
-	
-	XWindowAttributes wa;
-	XGetWindowAttributes(m_dpy, fwp.frame, &wa);
-
-	XReparentWindow(
-		m_dpy, 
-		w, 
-		m_root, wa.x + m_wd_settings.border_width, 
-		wa.y + m_wd_settings.titlebar_height + m_wd_settings.border_width
-	);
-
-	XDestroyWindow(m_dpy, fwp.frame);
-
+	m_windows -= w;
+	XDestroyWindow(m_dpy, w);
 	m_active_lcars_screen->GetInterface()->SetNeedsWindowRepaint(true);
 }
 
-frame_window_pair LCARS::GetFocusedFrameWindowPair() {
-	return GetFrameWindowPair(m_focused_window);
+Window LCARS::GetFocusedWindow() {
+	return m_focused_window;
 }
 
 int LCARS::Init() {

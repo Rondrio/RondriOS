@@ -8,6 +8,10 @@ LCARS_Button::LCARS_Button(SDL_Rect bounds, TTF_Font * font, char * text) : LCAR
 		m_colors = (SDL_Color *) malloc(sizeof(SDL_Color) * 8);
 }
 
+LCARS_Button::~LCARS_Button() {
+	free(m_colors);
+}
+
 void LCARS_Button::HandleSDLEvent(SDL_Event * ev) {
 	switch(ev->type) {
 		case SDL_MOUSEBUTTONDOWN:
@@ -27,11 +31,15 @@ void LCARS_Button::HandleSDLEvent(SDL_Event * ev) {
 void LCARS_Button::HandleCMPEvent(CMP_EVT_TYPE type) {
 	switch(type) {
 		case PD_FOCUS:
-			std::cout << m_text << " FOCUS\n";
 			SetNeedsRepaint(true);
 			break;
 		case PD_BLUR:
-			std::cout << m_text << " BLUR\n";
+			SetNeedsRepaint(true);
+			break;
+		case KB_FOCUS:
+			SetNeedsRepaint(true);
+			break;
+		case KB_BLUR:
 			SetNeedsRepaint(true);
 			break;
 	}
