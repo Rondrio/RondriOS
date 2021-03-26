@@ -69,7 +69,7 @@ class LCARS_Component : public LCARS_ICP {
 
 		void SetInterface(LCARS_Interface * interface);
 
-		void Draw(SDL_Renderer * renderer, SDL_Texture * buffer);
+		void Draw(SDL_Renderer * renderer);
 		LCARS_Component * ComponentAt(int x, int y);
 
 		virtual void AddChild(LCARS_Component * cmp);

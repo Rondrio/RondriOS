@@ -11,6 +11,11 @@
 #include "lcars_screen.hh"
 #include "lcars_keylistener.hh"
 
+struct SCREEN_INIT {
+	unsigned int screen_width;
+	unsigned int screen_height;
+};
+
 class LCARS {
 	private:
 
@@ -20,10 +25,7 @@ class LCARS {
 				LCARS_Screen 	*	m_active_lcars_screen;
 				Window				m_root;
 
-				Window	m_focused_window;
-
-				smp::list<Window>				m_windows;
-				smp::list<KeyListener *> *		m_key_listeners;
+				smp::list<KeyListener *> * m_key_listeners;
 
 		volatile bool m_running;
 
@@ -49,24 +51,6 @@ class LCARS {
 		 * @return 0 if an error occurred.
 		 * */
 		int HandleEventSDL	(SDL_Event * ev);
-
-		int	GetWindowCount	();
-
-		/**
-		 * Frames the given Window adds an entry of the resulting Pair to the
-		 * internal Registry.
-		 * 
-		 * @param w The Window to reparent into a Frame.
-		*/
-		void FrameWindow	(Window w);
-
-		/**
-		 * Removes the Frame around a Window.
-		 * @param w The Window to unframe.
-		*/
-		void UnframeWindow	(Window w);
-
-		Window GetFocusedWindow();
 
 		/**
 		 * Initializes the LCARS.

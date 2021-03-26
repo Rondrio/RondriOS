@@ -25,7 +25,6 @@ class PaintContext {
 		TTF_Font *	m_font;
 
 		SDL_Renderer *	m_renderer;
-		SDL_Texture *	m_buffer;
 		SDL_Texture *	m_texture;
 
 		int m_flip;
@@ -35,7 +34,7 @@ class PaintContext {
 
 	public:
 			PaintContext() = delete;
-			PaintContext(SDL_Renderer * renderer, SDL_Texture * buffer, SDL_Rect bounds);
+			PaintContext(SDL_Renderer * renderer, SDL_Rect bounds);
 		~	PaintContext();
 
 		SDL_Rect const * GetOffset();

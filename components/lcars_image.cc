@@ -1,28 +1,14 @@
 #include "lcars_image.hh"
 
-#include <iostream>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 
 LCARS_Image::LCARS_Image(int x, int y, int w, int h, SDL_Surface * img) : LCARS_Component({x, y, w, h}) {
 	m_img = img;
-	
-	m_resize_w = img->w;
-	m_resize_h = img->h;
 }
 
 LCARS_Image::~LCARS_Image() {
 
-}
-
-void LCARS_Image::Resize(int w, int h) {
-	m_resize_w = w;
-	m_resize_h = h;
-}
-
-void LCARS_Image::Reset() {
-	m_resize_w = m_img->w;
-	m_resize_h = m_img->h;
 }
 
 bool LCARS_Image::PointInHitbox(int x, int y) {
@@ -31,7 +17,7 @@ bool LCARS_Image::PointInHitbox(int x, int y) {
 }
 
 void LCARS_Image::Paint(PaintContext * paintctx) {
-	paintctx->DrawImage(0, 0, m_resize_w, m_resize_h, m_img);
+	paintctx->DrawImage(0, 0, m_img->w, m_img->h, m_img);
 }
 
 void LCARS_Image::HandleSDLEvent(SDL_Event * ev) {

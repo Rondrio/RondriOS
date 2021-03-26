@@ -7,9 +7,6 @@
 #include "../paint_context.hh"
 #include "../lcars_component.hh"
 
-enum input_filter {
-	IF_ALL, IF_INT, IF_FLOAT, IF_ALPHA, IF_SPECIAL
-};
 
 class LCARS_Text_Input : public LCARS_Component {
 
@@ -22,19 +19,13 @@ class LCARS_Text_Input : public LCARS_Component {
 		uint8_t		m_border_width;
 		SDL_Color	m_border_color;
 
-		uint16_t	m_inputfilter;
-
 		bool		m_repaint_placeholder_text;
 		std::string	m_placeholder_string;
 		text_t *	m_placeholder_text;
 		SDL_Color	m_placeholder_color;
 
 		uint64_t		m_caret_pos;
-
-		std::string *	m_shown_text;
 		std::string 	m_text_string;
-		std::string		m_starred_text;
-
 		text_t *		m_text;
 
 		uint8_t			m_padding;
@@ -56,27 +47,6 @@ class LCARS_Text_Input : public LCARS_Component {
 
 		void SetPlaceholderText(std::string text);
 		void SetPlaceholderColor(SDL_Color c);
-
-		/**
-		 * If the Text Input is flagged as PasswordField, all typed characters
-		 * result to be shown as stars (*).
-		 * 
-		 * @param b Set as PasswordField.
-		 * 
-		*/
-		void SetPasswordField(bool b);
-
-		/**
-		 * The InputFilter allows certain characters to be typed into the field
-		 * while all other characters are ignored.
-		 * 
-		 * For example: If you set the filter to IF_INT, only Digits will be accpeted.
-		 * If you set the filter to IF_ALL, all characters are accepted. The filters may
-		 * be or'd together like SetInputFilter(IF_INT | IF_FLOAT)
-		 * 
-		 * @param filter The accecpted characters.
-		*/
-		void SetInputFilter(uint16_t filter);
 
 		void		SetText(std::string text);
 		std::string	GetText();

@@ -8,10 +8,6 @@ LCARS_Button::LCARS_Button(SDL_Rect bounds, TTF_Font * font, char * text) : LCAR
 		m_colors = (SDL_Color *) malloc(sizeof(SDL_Color) * 8);
 }
 
-LCARS_Button::~LCARS_Button() {
-	free(m_colors);
-}
-
 void LCARS_Button::HandleSDLEvent(SDL_Event * ev) {
 	switch(ev->type) {
 		case SDL_MOUSEBUTTONDOWN:
@@ -31,31 +27,30 @@ void LCARS_Button::HandleSDLEvent(SDL_Event * ev) {
 void LCARS_Button::HandleCMPEvent(CMP_EVT_TYPE type) {
 	switch(type) {
 		case PD_FOCUS:
-			SetNeedsRepaint(true);
+			m_interface->AddPriorityRepaint(this);
+			//SetNeedsRepaint(true);
 			break;
 		case PD_BLUR:
-			SetNeedsRepaint(true);
-			break;
-		case KB_FOCUS:
-			SetNeedsRepaint(true);
-			break;
-		case KB_BLUR:
-			SetNeedsRepaint(true);
+			m_interface->AddPriorityRepaint(this);
+			//SetNeedsRepaint(true);
 			break;
 	}
 }
 
 void LCARS_Button::OnMouseDown(SDL_MouseButtonEvent * ev) {
 	m_pressed = true;
-	SetNeedsRepaint(true);
+	m_interface->AddPriorityRepaint(this);
+	//SetNeedsRepaint(true);
 }
 
 void LCARS_Button::OnMouseUp(SDL_MouseButtonEvent * ev) {
 	m_pressed = false;
-	SetNeedsRepaint(true);
+	m_interface->AddPriorityRepaint(this);
+	//SetNeedsRepaint(true);
 }
 
 void LCARS_Button::OnMouseMove(SDL_MouseMotionEvent * ev) {
+	m_interface->AddPriorityRepaint(this);
 	//SetNeedsRepaint(true);
 }
 

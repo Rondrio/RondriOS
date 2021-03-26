@@ -27,10 +27,10 @@ LCARS_Button_Rounded::LCARS_Button_Rounded(int x, int y, int w, int h, TTF_Font 
 	SetColor(BTN_COLOR_TYPE::COLOR_PRESS,	COL_SKYBLUE	);
 	SetColor(BTN_COLOR_TYPE::COLOR_ACTIVE,	COL_SKYBLUE	);
 
-	SetColor(BTN_COLOR_TYPE::TEXT_COLOR_IDLE,	{0, 0, 0, 255});
-	SetColor(BTN_COLOR_TYPE::TEXT_COLOR_HOVER,	{0, 0, 0, 255});
-	SetColor(BTN_COLOR_TYPE::TEXT_COLOR_PRESS,	{0, 0, 0, 255});
-	SetColor(BTN_COLOR_TYPE::TEXT_COLOR_ACTIVE,	{0, 0, 0, 255});
+	SetColor(BTN_COLOR_TYPE::TEXT_COLOR_IDLE, {0, 0, 0, 255});
+	SetColor(BTN_COLOR_TYPE::TEXT_COLOR_IDLE, {0, 0, 0, 255});
+	SetColor(BTN_COLOR_TYPE::TEXT_COLOR_IDLE, {0, 0, 0, 255});
+	SetColor(BTN_COLOR_TYPE::TEXT_COLOR_IDLE, {0, 0, 0, 255});
 	// TODO: WARN: Height may not be greater or equal to the width.
 }
 
@@ -72,8 +72,9 @@ void LCARS_Button_Rounded::Paint(PaintContext * paintctx) {
 
 	SDL_Color * c;
 
-	if(m_has_pd_focus)
+	if(m_has_pd_focus) {
 		c = GetColor(BTN_COLOR_TYPE::COLOR_HOVER);
+	}
 	else if(m_has_kb_focus)
 		c = GetColor(BTN_COLOR_TYPE::COLOR_ACTIVE);
 	else if(m_pressed)
@@ -96,8 +97,6 @@ void LCARS_Button_Rounded::Paint(PaintContext * paintctx) {
 
 
 	if(!m_button_text) {
-
-		// TODO: Set correct color.
 		paintctx->SetColor(255, 255, 255, 255);
 		paintctx->SetFont(m_font);
 
@@ -108,7 +107,7 @@ void LCARS_Button_Rounded::Paint(PaintContext * paintctx) {
 		}
 
 		SDL_Rect * bounds = &m_button_text->bounds;
-		bounds->x  = m_bounds.w - bounds->w - 10*!m_round_right;
+		bounds->x  = m_bounds.w - m_bounds.h/2 - bounds->w - 15*!m_round_right;
 		bounds->y  = m_bounds.h - bounds->h;
 	}
 

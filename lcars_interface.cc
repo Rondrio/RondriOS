@@ -2,9 +2,6 @@
 
 #include <iostream>
 
-static SDL_Texture * screen_tex;
-static SDL_Texture * window_tex;
-
 LCARS_Interface::LCARS_Interface(int x, int y, int width, int height) : LCARS_ICP(true) {
 	m_bounds.x = x;
 	m_bounds.y = y;
@@ -16,138 +13,47 @@ LCARS_Interface::LCARS_Interface(int x, int y, int width, int height) : LCARS_IC
 	m_cmp_pd_focus	= nullptr;
 	m_wnd_focus		= nullptr;
 
-	m_window_repaint	= false;
-
 	m_windows		= new smp::list<LCARS_Window *>();
 	m_components	= new smp::list<LCARS_Component *>();
 
-
-	/* TODO: Remove every trace of "Drawn" Window-Decorations */
 	m_window_move.moving_enabled = false;
 	m_window_move.window = nullptr;
 	m_window_move.x_offset = 0;
 	m_window_move.y_offset = 0;
-
-	m_screen_texture = nullptr;
-	m_window_texture = nullptr;
-}
-
-LCARS_Interface::~LCARS_Interface() {
-	delete m_windows;
-	delete m_components;
-
-	if(m_screen_texture)
-		SDL_DestroyTexture(m_screen_texture);
-
-	if(m_window_texture)
-		SDL_DestroyTexture(m_window_texture);
 }
 
 void LCARS_Interface::Draw(SDL_Renderer * renderer) {
 
-	if(!m_screen_texture) {
-		m_screen_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, m_bounds.w, m_bounds.h);
-		
-		if(!m_screen_texture) {
-			std::cerr << "ERROR SCREEN: " << SDL_GetError() << std::endl;
-			exit(0);
-		}
-		
-		SDL_SetTextureBlendMode(m_screen_texture, SDL_BLENDMODE_NONE);
-
-		SDL_SetRenderTarget(renderer, m_screen_texture);
-
-		SDL_Rect r = {0, 0, m_bounds.w, m_bounds.h};
-		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-		SDL_RenderFillRect(renderer, &r);
-	}
-
-	if(!m_window_texture) {
-		m_window_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, m_bounds.w, m_bounds.h);
-		SDL_SetTextureBlendMode(m_window_texture, SDL_BLENDMODE_BLEND);
-	}
-
 	if(NeedsRepaint()) {
+		SDL_RenderClear(renderer);
 
-		if(!m_screen_texture || SDL_SetRenderTarget(renderer, m_screen_texture) == -1) {
-			std::cerr << "ERROR SDL_SetRenderTarget(): " << SDL_GetError() << std::endl;
-			exit(0);
-		}
+		t
 
 		/* PAINT Components */
 		for(int i = 0; i < m_components->Size(); ++i) {
 			LCARS_Component * cmp = (*m_components)[i];
-			cmp->Draw(renderer, m_screen_texture);
+			cmp->Draw(renderer);
 		}
-
-		SDL_SetRenderTarget	(renderer, nullptr);
-		SDL_RenderCopy		(renderer, m_screen_texture, nullptr, nullptr);
-		SDL_RenderPresent	(renderer);
-
-		m_needs_repaint = false;
-	}
-
-	/* Repaint when a Window got moved */
-	/* The strategy is that the Screen Buffer (all LCARS_Components, for example) */
-	/* is redrawn and on top of that the Window Decoration is Drawn seperatly. */
-	if(m_window_repaint) {
-
-		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-		SDL_RenderClear(renderer);
-
-		if(SDL_SetRenderTarget(renderer, window_tex) == -1) {
-			std::cerr << "ERROR SDL_RenderCopy(): " << SDL_GetError() << std::endl;
-			exit(0);
-		}
-
-		//SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-
-		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-		SDL_RenderClear(renderer);
 
 		/* DRAW Window Decorations */
-		for(int i = 0; i < m_windows->Size(); ++i) {
-			LCARS_Window * lcars_window = (*m_windows)[i];
+			for(int i = 0; i < m_windows->Size(); ++i) {
+				LCARS_Window * lcars_window = (*m_windows)[i];
 
-			if(lcars_window->GetDecoration())
-				lcars_window->GetDecoration()->Draw(renderer);
-		}
+				if(lcars_window->GetDecoration())
+					lcars_window->GetDecoration()->Draw(renderer);
+			}
 
-		//SDL_RenderPresent(renderer);
-		SDL_SetRenderTarget(renderer, nullptr);
-		SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
-
-		/* Copy Screen Buffer */
-		if(SDL_RenderCopy(renderer, m_screen_texture, nullptr, nullptr) == -1) {
-			std::cerr << "ERROR SDL_RenderCopy(): " << SDL_GetError() << std::endl;
-			exit(0);
-		}
-
-		SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-
-		/* Copy Window Decorations Buffer */
-		if(SDL_RenderCopy(renderer, m_window_texture, nullptr, nullptr) == -1) {
-			std::cerr << "ERROR SDL_RenderCopy(): " << SDL_GetError() << std::endl;
-			exit(0);
-		}
-
+		SetNeedsRepaint(false);
 		SDL_RenderPresent(renderer);
-
-		m_window_repaint = false;
 	}
 
-	/* Priority Redraws. (This implementation allows for one Priority Redraw per "Frame") */
-	/* This may (or should) be changed in the future. */
-	if(m_priority_repaints.size() > 0) {
+	for(unsigned int i = 0; i < m_priority_repaints.size(); ++i) {
 		LCARS_Component * cmp = m_priority_repaints.back();
 		m_priority_repaints.pop();
 
-		std::cout << "Priority Redraw!\n";
-
-		cmp->Draw(renderer, m_screen_texture);
+		cmp->Draw(renderer);
 		SDL_RenderPresent(renderer);
 	}
-
 }
 
 void LCARS_Interface::AttachToScreen(LCARS_Screen * screen) {
@@ -189,10 +95,6 @@ void LCARS_Interface::AddPriorityRepaint(LCARS_Component * cmp) {
 
 void LCARS_Interface::SetNeedsRepaint(bool b) {
 	m_needs_repaint = b;
-}
-
-void LCARS_Interface::SetNeedsWindowRepaint(bool b) {
-	m_window_repaint = true;
 }
 
 void LCARS_Interface::SetFocusedWindow(Window w) {
@@ -323,8 +225,7 @@ void LCARS_Interface::DispatchSDLEvents(SDL_Event * ev) {
 
 					/* To not screw the whole Background, a full repaint is done for every Tick, the Window */
 					/* is moved  */
-					m_window_repaint = true;
-					//SetNeedsRepaint(true);
+					SetNeedsRepaint(true);
 				}
 
 			} else if(ev->type == SDL_MOUSEBUTTONDOWN) {

@@ -22,7 +22,7 @@ class LCARS_Button : public LCARS_Component {
 
 	public:
 					LCARS_Button() = delete;
-		virtual ~	LCARS_Button();
+		virtual ~	LCARS_Button() {}
 
 		virtual void HandleSDLEvent(SDL_Event * ev) override;
 		virtual void HandleCMPEvent(CMP_EVT_TYPE type) override;

@@ -10,7 +10,7 @@
 #include "lcars_window.hh"
 #include "lcars_component.hh"
 
-/* Forward declarations */
+/* Forward declaration of the LCARS_Screen */
 class LCARS_Screen;
 class LCARS_Window;
 class LCARS_Component;
@@ -31,11 +31,6 @@ class LCARS_Interface : public LCARS_ICP {
 
 	protected:
 
-		volatile bool	m_window_repaint;
-
-		SDL_Texture * m_screen_texture;
-		SDL_Texture * m_window_texture;
-
 		smp::list<LCARS_Window *>	 *	m_windows;
 		smp::list<LCARS_Component *> *	m_components;
 
@@ -52,11 +47,10 @@ class LCARS_Interface : public LCARS_ICP {
 		LCARS_Interface(int x, int y, int width, int height);
 
 	public:
-		virtual ~		LCARS_Interface	();
-
+		virtual ~		LCARS_Interface	() {}
 		virtual void 	Remap			() = 0;
 
-		void Draw			(SDL_Renderer * renderer);
+		void Draw(SDL_Renderer * renderer);
 
 		void AttachToScreen(LCARS_Screen * screen);
 
@@ -69,7 +63,6 @@ class LCARS_Interface : public LCARS_ICP {
 		void AddPriorityRepaint(LCARS_Component * cmp);
 
 		void SetNeedsRepaint(bool b);
-		void SetNeedsWindowRepaint(bool b);
 
 		void				SetFocusedWindow	(Window w);
 		void				SetFocusedWindow	(LCARS_Window * w);

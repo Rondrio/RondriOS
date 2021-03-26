@@ -8,24 +8,20 @@
 
 class LCARS_Image : public LCARS_Component {
 	private:
-		SDL_Surface *	m_img;
-		int				m_resize_w;
-		int				m_resize_h;
+		SDL_Surface * m_img;
 
 	public:
 			LCARS_Image(int x, int y, int w, int h, SDL_Surface * img);
 		virtual ~	LCARS_Image();
 
-		void Resize	(int w, int h);
-		void Reset	();
 
-		virtual bool PointInHitbox	(int x, int y)				override;
-		virtual void Paint			(PaintContext * paintctx)	override;
+		virtual bool PointInHitbox(int x, int y);
+		virtual void Paint(PaintContext * paintctx);
 
-		virtual void HandleSDLEvent			(SDL_Event * ev)	override;
-		virtual void OnUnhandledSDLEvent	(SDL_Event * ev)	override;
+		virtual void HandleSDLEvent(SDL_Event * ev);
+		virtual void OnUnhandledSDLEvent(SDL_Event * ev);
 
-		virtual void HandleCMPEvent	(CMP_EVT_TYPE type)			override;
+		virtual void HandleCMPEvent(CMP_EVT_TYPE type);
 
 		static SDL_Surface * LoadImage(std::string image_path);
 };
