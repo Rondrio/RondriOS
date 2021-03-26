@@ -2,7 +2,7 @@
 
 #include "../lcars_colors.hh"
 
-LCARS_BigDeco::LCARS_BigDeco(int x, int y, BigDecoStats stats) : LCARS_Component({x, y, stats.base_width + stats.main_arc_ry*c_arc_factor, (stats.arm_height - stats.main_arc_ry) > stats.base_height + stats.small_arc_ry ? stats.arm_height - stats.main_arc_ry + stats.main_arc_ry : stats.base_height + stats.small_arc_ry + stats.main_arc_ry}) {
+LCARS_BigDeco::LCARS_BigDeco(int x, int y, BigDecoStats stats) : LCARS_Component({x, y, stats.base_width + (int)(stats.main_arc_ry*c_arc_factor), (stats.arm_height - stats.main_arc_ry) > stats.base_height + stats.small_arc_ry ? stats.arm_height - stats.main_arc_ry + stats.main_arc_ry : stats.base_height + stats.small_arc_ry + stats.main_arc_ry}) {
 	m_arm_height	= stats.arm_height;
 	m_arm_width		= stats.arm_width;
 
@@ -113,9 +113,11 @@ SDL_Rect LCARS_BigDeco::CalcExtensionArc(PaintContext * paintctx) {
 
 		case BIGDECO_EXTENSION::SHARP: {
 
-			paintctx->FillEllipse(m_base_width - m_base_height/c_ellipse_factor, m_base_height, m_base_height/c_ellipse_factor, m_base_height);
+			int rx = (int)(m_base_height/c_ellipse_factor);
 
-			SDL_Rect black = {m_base_width - m_base_height/c_ellipse_factor*2, m_base_height, m_base_height/c_ellipse_factor*2, m_base_height/c_ellipse_factor};
+			paintctx->FillEllipse(m_base_width - rx, m_base_height, rx, m_base_height);
+
+			SDL_Rect black = {m_base_width - rx*2, m_base_height, rx*2, rx};
 			paintctx->SetColor(0, 0, 0, 255);
 			paintctx->FillRect(&black);
 			break;

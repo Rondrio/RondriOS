@@ -2,9 +2,13 @@
 #define SIMPLE_LIST_HH_
 
 #include <cstdlib>
+#include <cstring>
 #include <iostream>
 
 namespace smp {
+
+	/* void * Parameter == the list */
+	typedef void (*sortfunc)(void *);
 
 	template <typename T> class list {
 
@@ -38,7 +42,15 @@ namespace smp {
 				m_relative_size	= 0;
 			}
 
-			~list() {
+			list(const list& o) {
+				m_backlog		= (T *) malloc(sizeof(T) * o.m_absolute_size);
+				m_absolute_size = o.m_absolute_size;
+				m_relative_size	= o.m_relative_size;
+
+				memcpy(m_backlog, o.m_backlog, sizeof(T)*m_relative_size);
+			}
+
+			virtual ~list() {
 				free(m_backlog);
 			}
 
@@ -51,17 +63,15 @@ namespace smp {
 				}
 			}
 
-			T Rem(T reference) {
+			void Rem(T reference) {
 				for(unsigned int i = 0; i < m_relative_size; ++i) {
 					if(m_backlog[i] == reference) {
-						return Rem(i);
+						Rem(i);
 					}
 				}
-
-				return 0;
 			}
 
-			T Rem(unsigned int index) {
+			void Rem(unsigned int index) {
 				if(index >= 0 && index < m_relative_size) {
 					T rtrn = m_backlog[index];
 
@@ -74,10 +84,7 @@ namespace smp {
 					}
 
 					m_relative_size--;
-					return rtrn;
 				}
-
-				return 0;
 			}
 
 			T Get(unsigned int index) {
@@ -108,6 +115,10 @@ namespace smp {
 				return m_relative_size;
 			}
 
+			void Sort(sortfunc sf) {
+				sf(this);
+			}
+
 			T& operator[](int i) {
 				return m_backlog[i];
 			}
@@ -120,6 +131,14 @@ namespace smp {
 			smp::list<T>& operator-=(const T r) {
 				Rem(r);
 				return *this;
+			}
+
+			smp::list<T>& operator=(const smp::list<T>& o) {
+				m_backlog		= (T *) malloc(sizeof(T) * o.m_absolute_size);
+				m_absolute_size	= o.m_absolute_size;
+				m_relative_size	= o.m_relative_size;
+
+				memcpy(m_backlog, o.m_backlog, sizeof(T) * m_relative_size);
 			}
 	};
 }

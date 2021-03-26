@@ -77,9 +77,10 @@ class LCARS_BigDeco : public LCARS_Component {
 		SDL_Rect CalcButtonsContainer();
 
 	public:
-			LCARS_BigDeco() = delete;
-			LCARS_BigDeco(int x, int y, BigDecoStats stats);
-		~	LCARS_BigDeco();
+					LCARS_BigDeco()						= delete;
+					LCARS_BigDeco(const LCARS_BigDeco&)	= delete;
+					LCARS_BigDeco(int x, int y, BigDecoStats stats);
+		virtual ~	LCARS_BigDeco();
 
 		void SetOrientation(BIGDECO_ORIENTATION o);
 
@@ -111,6 +112,8 @@ class LCARS_BigDeco : public LCARS_Component {
 		virtual void HandleSDLEvent(SDL_Event * ev)			override;
 		virtual void OnUnhandledSDLEvent(SDL_Event * ev)	override;
 		virtual void HandleCMPEvent(CMP_EVT_TYPE type)		override;
+
+		virtual LCARS_BigDeco& operator=(const LCARS_BigDeco&) = delete;
 };
 
 

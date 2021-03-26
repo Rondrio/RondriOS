@@ -24,8 +24,10 @@ class LCARS_Button_Rounded : public LCARS_Button {
 		SDL_Rect CalcInnerRect();
 
 	public:
-			LCARS_Button_Rounded(int x, int y, int w, int h, TTF_Font * font, char * text);
-		~	LCARS_Button_Rounded();
+					LCARS_Button_Rounded()								= delete;
+					LCARS_Button_Rounded(const LCARS_Button_Rounded&)	= delete;
+					LCARS_Button_Rounded(int x, int y, int w, int h, TTF_Font * font, std::string text);
+		virtual ~	LCARS_Button_Rounded();
 
 		void SetRoundLeft	(bool b);
 		void SetRoundRight	(bool b);
@@ -34,6 +36,8 @@ class LCARS_Button_Rounded : public LCARS_Button {
 		virtual void Paint				(PaintContext * paintctx)	override;
 		virtual void HandleSDLEvent		(SDL_Event * ev)			override;
 		virtual void OnUnhandledSDLEvent(SDL_Event * ev)			override;
+
+		virtual LCARS_Button_Rounded& operator=(const LCARS_Button_Rounded&) = delete;
 };
 
 #endif /* COMPONENTS_LCARS_BUTTON_ROUNDED_HH_ */

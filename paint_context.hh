@@ -4,6 +4,8 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
+#include <string>
+
 struct bezier_t {
 	signed short * vx;
 	signed short * vy;
@@ -13,7 +15,7 @@ struct bezier_t {
 
 struct text_t {
 	SDL_Texture *	tex_text;
-	char		*	str;
+	std::string	*	str;
 	SDL_Rect		bounds;
 };
 
@@ -25,16 +27,18 @@ class PaintContext {
 		TTF_Font *	m_font;
 
 		SDL_Renderer *	m_renderer;
+		SDL_Texture *	m_buffer;
 		SDL_Texture *	m_texture;
 
 		int m_flip;
 
-		text_t *	PrepareText(int16_t x, int16_t y, char * str, SDL_Surface * surf);
+		text_t *	PrepareText(int16_t x, int16_t y, std::string * str, SDL_Surface * surf);
 		void		PrepareRect(SDL_Rect * rect, SDL_Rect * rect_out);
 
 	public:
-			PaintContext() = delete;
-			PaintContext(SDL_Renderer * renderer, SDL_Rect bounds);
+			PaintContext()						= delete;
+			PaintContext(const PaintContext&)	= delete;
+			PaintContext(SDL_Renderer * renderer, SDL_Texture * buffer, SDL_Rect bounds);
 		~	PaintContext();
 
 		SDL_Rect const * GetOffset();
@@ -63,11 +67,13 @@ class PaintContext {
 		 * For every Text, this Method should only be called once. As it is
 		 * very expensive.
 		 * */
-				text_t *	PrepareBlendedText(int16_t x, int16_t y, char * str);
-				text_t *	PrepareSolidText(int16_t x, int16_t y, char * str);
+				text_t *	PrepareBlendedText(int16_t x, int16_t y, std::string * str);
+				text_t *	PrepareSolidText(int16_t x, int16_t y, std::string * str);
 		static	void		DestroyText(text_t * text);
 
 		void DrawText(text_t * text, SDL_Rect * src, SDL_Rect * dst);
+
+		PaintContext& operator=(const PaintContext&) = delete;
 };
 
 

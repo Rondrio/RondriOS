@@ -4,6 +4,22 @@
 #include <string>
 #include <SDL2/SDL_ttf.h>
 
+static bool isdigit(char c) {
+	return c >= '0' && c <= '9';
+}
+
+static bool isfloat(char c) {
+	return isdigit(c) || c == '.';
+}
+
+static bool isalpha(char c) {
+	return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
+}
+
+static bool isspecial(char c) {
+	return (!isdigit(c) && !isfloat(c) && !isalpha(c)) || c == '.';
+}
+
 LCARS_Text_Input::LCARS_Text_Input(int16_t x, int16_t y, int16_t w, int16_t h, TTF_Font * font, std::string placeholder) : LCARS_Component({x, y, w, h}) {
 	m_font = font;
 	m_font_color	= {255, 255, 255, 255};
@@ -11,9 +27,12 @@ LCARS_Text_Input::LCARS_Text_Input(int16_t x, int16_t y, int16_t w, int16_t h, T
 	m_padding		= 5;
 	m_vpadding		= 10;
 
+	m_inputfilter = IF_ALL;
+
 	m_repaint_placeholder_text = true;
 	m_placeholder_string		= placeholder;
 	m_placeholder_text			= nullptr;
+	m_shown_text				= &m_text_string;
 
 	m_text		= nullptr;
 	m_caret_pos	= 0;
@@ -31,6 +50,26 @@ LCARS_Text_Input::~LCARS_Text_Input() {
 		PaintContext::DestroyText(m_text);
 }
 
+bool LCARS_Text_Input::FilterInput(char * text, int len) {
+	if(!m_inputfilter)
+		return true;
+
+	for(int i = 0; i < len; ++i) {
+
+		char c = text[i];
+
+		if(
+			!((m_inputfilter & IF_INT)		&& isdigit(c)		||
+			(m_inputfilter & IF_FLOAT)		&& isfloat(c)		||
+			(m_inputfilter & IF_ALPHA)		&& isalpha(c) 		||
+			(m_inputfilter & IF_SPECIAL)	&& isspecial(c))) {
+				return false;
+		}
+	}
+
+	return true;
+}
+
 void LCARS_Text_Input::SetBorderWidth(uint8_t w) {
 	m_border_width = w;
 	SetNeedsRepaint(true);
@@ -38,6 +77,7 @@ void LCARS_Text_Input::SetBorderWidth(uint8_t w) {
 
 void LCARS_Text_Input::SetBorderColor(SDL_Color c) {
 	m_border_color = c;
+	SetNeedsRepaint(true);
 }
 
 void LCARS_Text_Input::DrawTextContent(PaintContext * ctx) {
@@ -46,7 +86,8 @@ void LCARS_Text_Input::DrawTextContent(PaintContext * ctx) {
 
 	ctx->SetFont(m_font);
 	ctx->SetColor(m_font_color.r, m_font_color.g, m_font_color.b, m_font_color.a);
-	m_text = ctx->PrepareBlendedText(0, 0,(char *) m_text_string.c_str());
+	
+	m_text = ctx->PrepareBlendedText(0, 0, m_shown_text);
 
 	if(m_text) {
 
@@ -61,7 +102,7 @@ void LCARS_Text_Input::DrawPlaceholder(PaintContext * ctx) {
 	ctx->SetColor(m_placeholder_color.r, m_placeholder_color.g, m_placeholder_color.b, m_placeholder_color.a);
 	ctx->SetFont(m_font);
 
-	m_placeholder_text = ctx->PrepareBlendedText(0, 0, (char *) m_placeholder_string.c_str());
+	m_placeholder_text = ctx->PrepareBlendedText(0, 0, &m_placeholder_string);
 
 	if(m_text_string.length() <= 0) {
 
@@ -76,6 +117,20 @@ void LCARS_Text_Input::SetPlaceholderText(std::string text) {
 	m_placeholder_string		= text;
 	m_repaint_placeholder_text	= true;
 	SetNeedsRepaint(true);
+}
+
+void LCARS_Text_Input::SetPasswordField(bool b) {
+
+	if(b)
+		m_shown_text = &m_starred_text;
+	else
+		m_shown_text = &m_text_string;
+
+	SetNeedsRepaint(true);
+}
+
+void LCARS_Text_Input::SetInputFilter(uint16_t filter) {
+	m_inputfilter |= filter;
 }
 
 void LCARS_Text_Input::SetPlaceholderColor(SDL_Color c) {
@@ -121,7 +176,7 @@ void LCARS_Text_Input::Paint(PaintContext * paintctx) {
 		DrawPlaceholder(paintctx);
 
 	/* Get the actual xy-Position of where the Caret should be on screen */
-	std::string substring = m_text_string.substr(0, m_caret_pos);
+	std::string substring = m_shown_text->substr(0, m_caret_pos);
 	int pixheight, pixlen;
 	TTF_SizeText(m_font, substring.c_str(), &pixlen, &pixheight);
 
@@ -177,6 +232,9 @@ void LCARS_Text_Input::HandleSDLEvent(SDL_Event * ev) {
 						m_text_string = pre_str + post_str;
 					}
 
+					if(m_starred_text.size() > 0)
+						m_starred_text.pop_back();
+					
 					m_caret_pos--;
 					SetNeedsRepaint(true);
 					break;
@@ -248,12 +306,18 @@ void LCARS_Text_Input::HandleSDLEvent(SDL_Event * ev) {
 			int h, w;
 			TTF_SizeText(m_font, new_text_string.c_str(), &w, &h);
 
-			//if(w < m_bounds.w - m_padding) {
-				m_text_string	 = new_text_string;
-				m_caret_pos		+= strlen(tip->text);
-			//}
+			int len = strlen(tip->text);
+			if(FilterInput(tip->text, len)) {
 
-			SetNeedsRepaint(true);
+			 	m_text_string	 = new_text_string;
+			 	m_caret_pos		+= len;
+
+				for(int i = 0; i < len; ++i)
+					m_starred_text += '*';
+
+				SetNeedsRepaint(true);
+			}
+
 			break;
 		}
 		case SDL_TEXTEDITING: {

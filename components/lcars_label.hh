@@ -25,7 +25,8 @@ class LCARS_Label : public LCARS_Component {
 		uint16_t	m_vpadding;
 
 	public:
-					LCARS_Label() = delete;
+					LCARS_Label()					= delete;
+					LCARS_Label(const LCARS_Label&)	= delete;
 					LCARS_Label(int x, int y, int w, int h, std::string font_path, std::string text);
 		virtual ~	LCARS_Label();
 
@@ -48,6 +49,7 @@ class LCARS_Label : public LCARS_Component {
 
 		virtual void HandleCMPEvent(CMP_EVT_TYPE type)		override;
 
+		virtual LCARS_Label& operator=(const LCARS_Label&) = delete;
 };
 
 

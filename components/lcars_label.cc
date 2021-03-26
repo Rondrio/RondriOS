@@ -95,7 +95,7 @@ void LCARS_Label::Paint(PaintContext * paintctx) {
 		paintctx->SetColor(m_font_color.r, m_font_color.g, m_font_color.b, m_font_color.a);
 		paintctx->SetFont(m_font);
 
-		m_text = paintctx->PrepareBlendedText(m_padding, m_vpadding, (char *) m_text_string.c_str());
+		m_text = paintctx->PrepareBlendedText(m_padding, m_vpadding, &m_text_string);
 	}
 
 	if(m_text) {

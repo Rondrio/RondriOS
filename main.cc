@@ -49,8 +49,9 @@ static void quit(LCARS * lcars, Arg * arg) {
 }
 
 static void close(LCARS * lcars, Arg * arg) {
-	lcars->CloseFocusedWindow();
-	lcars->GetScreen()->GetInterface()->SetNeedsRepaint(true);
+	// lcars->CloseFocusedWindow();
+	// lcars->GetScreen()->GetInterface()->SetNeedsRepaint(true);
+	lcars->UnframeWindow(lcars->GetFocusedWindow());
 }
 
 static void summon(LCARS * lcars, Arg * arg) {

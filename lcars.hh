@@ -11,11 +11,6 @@
 #include "lcars_screen.hh"
 #include "lcars_keylistener.hh"
 
-struct SCREEN_INIT {
-	unsigned int screen_width;
-	unsigned int screen_height;
-};
-
 class LCARS {
 	private:
 
@@ -25,16 +20,20 @@ class LCARS {
 				LCARS_Screen 	*	m_active_lcars_screen;
 				Window				m_root;
 
-				smp::list<KeyListener *> * m_key_listeners;
+				Window	m_focused_window;
+
+				smp::list<Window>				m_windows;
+				smp::list<KeyListener *> *		m_key_listeners;
 
 		volatile bool m_running;
 
 		static int ErrorHandler(Display * dpy, XErrorEvent * ev);
 
 	public:
-			LCARS() = delete;
-			LCARS(Display * dpy);
-		~	LCARS();
+					LCARS()				= delete;
+					LCARS(const LCARS&)	= delete;
+					LCARS(Display * dpy);
+		virtual ~	LCARS();
 
 		void AddKeyListener(KeyListener * kl);
 
@@ -51,6 +50,24 @@ class LCARS {
 		 * @return 0 if an error occurred.
 		 * */
 		int HandleEventSDL	(SDL_Event * ev);
+
+		int	GetWindowCount	();
+
+		/**
+		 * Frames the given Window adds an entry of the resulting Pair to the
+		 * internal Registry.
+		 * 
+		 * @param w The Window to reparent into a Frame.
+		*/
+		void FrameWindow	(Window w);
+
+		/**
+		 * Removes the Frame around a Window.
+		 * @param w The Window to unframe.
+		*/
+		void UnframeWindow	(Window w);
+
+		Window GetFocusedWindow();
 
 		/**
 		 * Initializes the LCARS.
@@ -76,6 +93,8 @@ class LCARS {
 		LCARS_Screen * GetScreen();
 
 		int Checkmod(XKeyEvent ke, KeyListener listener);
+
+		LCARS& operator=(const LCARS&) = delete;
 };
 
 #endif /* LCARS_HH_ */

@@ -4,11 +4,13 @@
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL.h>
 #include <iostream>
+#include <string>
 
 #include "paint_context_ex.hh"
 
-PaintContext::PaintContext(SDL_Renderer * renderer, SDL_Rect bounds) {
+PaintContext::PaintContext(SDL_Renderer * renderer, SDL_Texture * buffer, SDL_Rect bounds) {
 	m_renderer	= renderer;
+	m_buffer	= buffer;
 	m_bounds	= bounds;
 	m_color		= {0, 0, 0, 255};
 	m_font		= nullptr;
@@ -29,13 +31,13 @@ PaintContext::PaintContext(SDL_Renderer * renderer, SDL_Rect bounds) {
 
 PaintContext::~PaintContext() {
 	//PaintScreen();
-	SDL_SetRenderTarget(m_renderer, NULL);
+	SDL_SetRenderTarget(m_renderer, m_buffer);
 	SDL_DestroyTexture(m_texture);
 }
 
-text_t * PaintContext::PrepareText(int16_t x, int16_t y, char * str, SDL_Surface * surf) {
+text_t * PaintContext::PrepareText(int16_t x, int16_t y, std::string * str, SDL_Surface * surf) {
 
-	SDL_SetRenderTarget(m_renderer, NULL);
+	SDL_SetRenderTarget(m_renderer, nullptr);
 	SDL_Texture * tex	= SDL_CreateTextureFromSurface(m_renderer, surf);
 
 	if(surf)
@@ -47,7 +49,7 @@ text_t * PaintContext::PrepareText(int16_t x, int16_t y, char * str, SDL_Surface
 	}
 
 	int h, w;
-	TTF_SizeText(m_font, str, &w, &h);
+	TTF_SizeText(m_font, str->c_str(), &w, &h);
 
 	SDL_Rect bounds = {
 			x + m_bounds.x, y + m_bounds.y, w, h
@@ -106,38 +108,38 @@ void PaintContext::FillRect(SDL_Rect * rect) {
 	if(SDL_RenderFillRect(m_renderer, rect) == -1)
 		std::cerr << "ERROR: " << SDL_GetError() << std::endl;
 
-	if(SDL_SetRenderTarget(m_renderer, NULL) == -1)
+	if(SDL_SetRenderTarget(m_renderer, m_buffer) == -1)
 		std::cerr << "ERROR: " << SDL_GetError() << std::endl;
 }
 
 void PaintContext::DrawRect(SDL_Rect * rect) {
 	SDL_SetRenderTarget(m_renderer, m_texture);
 	rectangleRGBA(m_renderer, rect->x, rect->y, rect->x+rect->w, rect->y+rect->h, m_color.r, m_color.g, m_color.b, m_color.a);
-	SDL_SetRenderTarget(m_renderer, NULL);
+	SDL_SetRenderTarget(m_renderer, m_buffer);
 }
 
 void PaintContext::FillCircle(int16_t x, int16_t y, int16_t rad) {
 	SDL_SetRenderTarget(m_renderer, m_texture);
 	aaFilledEllipseRGBA(m_renderer, x, y, rad, rad, m_color.r, m_color.g, m_color.b, m_color.a);
-	SDL_SetRenderTarget(m_renderer, NULL);
+	SDL_SetRenderTarget(m_renderer, m_buffer);
 }
 
 void PaintContext::DrawCircle(int16_t x, int16_t y, int16_t rad) {
 	SDL_SetRenderTarget(m_renderer, m_texture);
 	aacircleRGBA(m_renderer, x, y, rad, m_color.r, m_color.g, m_color.b, m_color.a);
-	SDL_SetRenderTarget(m_renderer, NULL);
+	SDL_SetRenderTarget(m_renderer, m_buffer);
 }
 
 void PaintContext::FillEllipse(int16_t x, int16_t y, int16_t rx, int16_t ry) {
 	SDL_SetRenderTarget(m_renderer, m_texture);
 	aaFilledEllipseRGBA(m_renderer, x, y, rx, ry, m_color.r, m_color.g, m_color.b, m_color.a);
-	SDL_SetRenderTarget(m_renderer, NULL);
+	SDL_SetRenderTarget(m_renderer, m_buffer);
 }
 
 void PaintContext::DrawEllipse(int16_t x, int16_t y, int16_t rx, int16_t ry) {
 	SDL_SetRenderTarget(m_renderer, m_texture);
 	aaellipseRGBA(m_renderer, x, y, rx, ry, m_color.r, m_color.g, m_color.b, m_color.a);
-	SDL_SetRenderTarget(m_renderer, NULL);
+	SDL_SetRenderTarget(m_renderer, m_buffer);
 }
 
 void PaintContext::DrawImage(int x, int y, int w, int h, SDL_Surface * img) {
@@ -151,11 +153,11 @@ void PaintContext::DrawImage(int x, int y, int w, int h, SDL_Surface * img) {
 	SDL_RenderCopy(m_renderer, tex, &src, &dst);
 
 	SDL_DestroyTexture(tex);
-	SDL_SetRenderTarget(m_renderer, NULL);
+	SDL_SetRenderTarget(m_renderer, m_buffer);
 }
 
-text_t * PaintContext::PrepareBlendedText(int16_t x, int16_t y, char * str) {
-	SDL_Surface * surf	= TTF_RenderText_Blended(m_font, str, m_color);
+text_t * PaintContext::PrepareBlendedText(int16_t x, int16_t y, std::string * str) {
+	SDL_Surface * surf	= TTF_RenderText_Blended(m_font, str->c_str(), m_color);
 
 	if(!surf)
 		std::cerr << "ERROR: " << SDL_GetError() << std::endl;
@@ -163,8 +165,8 @@ text_t * PaintContext::PrepareBlendedText(int16_t x, int16_t y, char * str) {
 	return PrepareText(x, y, str, surf);
 }
 
-text_t * PaintContext::PrepareSolidText(int16_t x, int16_t y, char * str) {
-	SDL_Surface * surf	= TTF_RenderText_Solid(m_font, str, m_color);
+text_t * PaintContext::PrepareSolidText(int16_t x, int16_t y, std::string * str) {
+	SDL_Surface * surf	= TTF_RenderText_Solid(m_font, str->c_str(), m_color);
 
 	if(!surf)
 		std::cerr << "ERROR: " << SDL_GetError() << std::endl;
@@ -175,6 +177,7 @@ text_t * PaintContext::PrepareSolidText(int16_t x, int16_t y, char * str) {
 void PaintContext::DestroyText(text_t * text) {
 	if(text->tex_text)
 		SDL_DestroyTexture(text->tex_text);
+	free(text);
 }
 
 void PaintContext::DrawText(text_t * text, SDL_Rect * src, SDL_Rect * dst) {
@@ -183,11 +186,11 @@ void PaintContext::DrawText(text_t * text, SDL_Rect * src, SDL_Rect * dst) {
 	SDL_SetRenderTarget(m_renderer, m_texture);
 	if(SDL_RenderCopy(m_renderer, text->tex_text, src, &dst_modded) == -1)
 		std::cerr << "ERROR: " << SDL_GetError() << std::endl;
-	SDL_SetRenderTarget(m_renderer, NULL);
+	SDL_SetRenderTarget(m_renderer, m_buffer);
 }
 
 void PaintContext::PaintScreen() {
-	SDL_SetRenderTarget(m_renderer, NULL);
+	SDL_SetRenderTarget(m_renderer, m_buffer);
 
 	SDL_Rect src = {0, 0, m_bounds.w, m_bounds.h};
 	SDL_Rect dst = {m_bounds.x, m_bounds.y, m_bounds.w, m_bounds.h};

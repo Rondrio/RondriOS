@@ -29,6 +29,7 @@ class LCARS_Group : public LCARS_Component {
     void Rearrange();
 
     public:
+                    LCARS_Group()                   = delete;
                     LCARS_Group(const LCARS_Group&) = delete;
                     LCARS_Group(int x, int y, int cols, int rows, int width, int height, int col_padding, int row_padding);
         virtual ~   LCARS_Group();

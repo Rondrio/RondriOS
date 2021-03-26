@@ -3,6 +3,7 @@
 
 #include "lcars_component.hh"
 #include <SDL2/SDL_ttf.h>
+#include <string>
 
 enum struct BTN_COLOR_TYPE {
 	COLOR_IDLE,			COLOR_HOVER,		COLOR_PRESS,		COLOR_ACTIVE,
@@ -14,15 +15,16 @@ class LCARS_Button : public LCARS_Component {
 	protected:
 		volatile bool	m_pressed;
 		TTF_Font	*	m_font;
-		char		*	m_text;
+		std::string		m_text;
 
 		SDL_Color * m_colors;
 
-		LCARS_Button(SDL_Rect bounds, TTF_Font * font, char * text);
+		LCARS_Button(SDL_Rect bounds, TTF_Font * font, std::string text);
 
 	public:
-					LCARS_Button() = delete;
-		virtual ~	LCARS_Button() {}
+					LCARS_Button()						= delete;
+					LCARS_Button(const LCARS_Button&)	= delete;
+		virtual ~	LCARS_Button();
 
 		virtual void HandleSDLEvent(SDL_Event * ev) override;
 		virtual void HandleCMPEvent(CMP_EVT_TYPE type) override;
@@ -34,11 +36,13 @@ class LCARS_Button : public LCARS_Component {
 		void			SetFont(TTF_Font * font);
 		TTF_Font	*	GetFont();
 
-		void			SetText(char * text);
-		char		*	GetText();
+		void			SetText(std::string text);
+		std::string	*	GetText();
 
 		void		SetColor		(BTN_COLOR_TYPE colortype, SDL_Color color);
 		SDL_Color *	GetColor		(BTN_COLOR_TYPE colortype);
+
+		virtual LCARS_Button& operator=(const LCARS_Button& rhs) = delete;
 };
 
 

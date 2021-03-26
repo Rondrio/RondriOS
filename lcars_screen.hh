@@ -5,6 +5,8 @@
 #include <X11/Xlib.h>
 
 #include "lcars_interface.hh"
+#include "simple_list.hh"
+#include "lcars_timer.hh"
 
 /* Forward declaration of the LCARS_Interface */
 class LCARS_Interface;
@@ -21,9 +23,13 @@ class LCARS_Screen {
 		SDL_Window		*	m_sdl_window;
 		SDL_Renderer	*	m_sdl_renderer;
 
+		smp::list<lcarstimer_t *>	m_timers;
+
 	public:
-			LCARS_Screen	(Display * dpy, int x, int y, int width, int height);
-		~	LCARS_Screen	();
+					LCARS_Screen	()						= delete;
+					LCARS_Screen	(const LCARS_Screen&)	= delete;
+					LCARS_Screen	(Display * dpy, int x, int y, int width, int height);
+		virtual ~	LCARS_Screen	();
 
 
 		/**
@@ -44,7 +50,18 @@ class LCARS_Screen {
 
 		Display * GetDisplay();
 
+		/**
+		 * Adds a Timer. The Timer will wait for _runtime_ Seconds and
+		 * then call the timer_action Function. If the repeat Flag is set to 1,
+		 * the Timer will run one time. Is the repeat Flag set higher then 1,
+		 * the Timer will run as many times as the Flag states.
+		 * To let the Timer run indefinetly, set the Flag to -1.
+		*/
+		void AddTimer(uint64_t runtime, int repeats, timer_action action_func);
+
 		void DispatchSDLEvents(SDL_Event * ev);
+
+		LCARS_Screen& operator=(const LCARS_Screen&) = delete;
 };
 
 

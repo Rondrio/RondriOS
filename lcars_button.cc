@@ -1,11 +1,15 @@
 #include "lcars_button.hh"
 
-LCARS_Button::LCARS_Button(SDL_Rect bounds, TTF_Font * font, char * text) : LCARS_Component(bounds) {
+LCARS_Button::LCARS_Button(SDL_Rect bounds, TTF_Font * font, std::string text) : LCARS_Component(bounds) {
 		m_pressed	= false;
 		m_font		= font;
 		m_text		= text;
 
 		m_colors = (SDL_Color *) malloc(sizeof(SDL_Color) * 8);
+}
+
+LCARS_Button::~LCARS_Button() {
+	free(m_colors);
 }
 
 void LCARS_Button::HandleSDLEvent(SDL_Event * ev) {
@@ -16,9 +20,6 @@ void LCARS_Button::HandleSDLEvent(SDL_Event * ev) {
 		case SDL_MOUSEBUTTONUP:
 			OnMouseUp(&(ev->button));
 			break;
-		/*case SDL_MOUSEMOTION:
-			//OnMouseMove(&(ev->motion));
-			break;*/
 		default:
 			OnUnhandledSDLEvent(ev);
 	}
@@ -27,31 +28,32 @@ void LCARS_Button::HandleSDLEvent(SDL_Event * ev) {
 void LCARS_Button::HandleCMPEvent(CMP_EVT_TYPE type) {
 	switch(type) {
 		case PD_FOCUS:
-			m_interface->AddPriorityRepaint(this);
-			//SetNeedsRepaint(true);
+			SetNeedsRepaint(true);
 			break;
 		case PD_BLUR:
-			m_interface->AddPriorityRepaint(this);
-			//SetNeedsRepaint(true);
+			SetNeedsRepaint(true);
+			break;
+		case KB_FOCUS:
+			SetNeedsRepaint(true);
+			break;
+		case KB_BLUR:
+			SetNeedsRepaint(true);
 			break;
 	}
 }
 
 void LCARS_Button::OnMouseDown(SDL_MouseButtonEvent * ev) {
 	m_pressed = true;
-	m_interface->AddPriorityRepaint(this);
-	//SetNeedsRepaint(true);
+	SetNeedsRepaint(true);
 }
 
 void LCARS_Button::OnMouseUp(SDL_MouseButtonEvent * ev) {
 	m_pressed = false;
-	m_interface->AddPriorityRepaint(this);
-	//SetNeedsRepaint(true);
+	SetNeedsRepaint(true);
 }
 
 void LCARS_Button::OnMouseMove(SDL_MouseMotionEvent * ev) {
-	m_interface->AddPriorityRepaint(this);
-	//SetNeedsRepaint(true);
+	
 }
 
 void LCARS_Button::SetFont(TTF_Font * font) {
@@ -62,12 +64,12 @@ TTF_Font * LCARS_Button::GetFont() {
 	return m_font;
 }
 
-void LCARS_Button::SetText(char * text) {
+void LCARS_Button::SetText(std::string text) {
 	m_text = text;
 }
 
-char * LCARS_Button::GetText() {
-	return m_text;
+std::string * LCARS_Button::GetText() {
+	return &m_text;
 }
 
 void LCARS_Button::SetColor(BTN_COLOR_TYPE colortype, SDL_Color color) {

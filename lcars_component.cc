@@ -20,10 +20,8 @@ SDL_Rect LCARS_Component::GetAbsoluteBounds() {
 		pos = m_parent->GetAbsoluteBounds();
 	}
 
-	//if(pos.x == 0 && pos.y == 0) {
-		pos.w = m_bounds.w;
-		pos.h = m_bounds.h;
-	//}
+	pos.w = m_bounds.w;
+	pos.h = m_bounds.h;
 
 	pos.x += m_bounds.x;
 	pos.y += m_bounds.y;
@@ -82,16 +80,21 @@ void LCARS_Component::SetInterface(LCARS_Interface * interface) {
 	}
 }
 
-void LCARS_Component::Draw(SDL_Renderer * renderer) {
+void LCARS_Component::Draw(SDL_Renderer * renderer, SDL_Texture * buffer) {
+		
+		if(!NeedsRepaint()) return;
+		
 		SDL_Rect abs = GetAbsoluteBounds();
 
-		PaintContext ctx(renderer, abs);
+		PaintContext ctx(renderer, buffer, abs);
 		Paint(&ctx);
 		ctx.PaintScreen();
 
 		for(int i = 0; i < m_children.Size(); ++i) {
-			m_children[i]->Draw(renderer);
+			m_children[i]->Draw(renderer, buffer);
 		}
+
+		m_needs_repaint = false;
 }
 
 LCARS_Component * LCARS_Component::ComponentAt(int x, int y) {
