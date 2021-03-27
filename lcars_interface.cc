@@ -28,7 +28,7 @@ LCARS_Interface::~LCARS_Interface() {
 void LCARS_Interface::Draw(SDL_Renderer * renderer) {
 
 	if(!m_screen_texture) {
-		m_screen_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, m_bounds.w, m_bounds.h);
+		m_screen_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, m_bounds.w, m_bounds.h);
 		
 		if(!m_screen_texture) {
 			std::cerr << "ERROR SCREEN: " << SDL_GetError() << std::endl;

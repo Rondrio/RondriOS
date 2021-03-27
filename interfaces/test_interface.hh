@@ -8,7 +8,7 @@
 
 
 #include "../components/lcars_button_rounded.hh"
-#include "../components/lcars_text_input.hh"
+#include "../components/lcars_inputfield.hh"
 #include "../components/lcars_label.hh"
 #include "../components/lcars_bigdeco.hh"
 #include "../components/lcars_image.hh"
@@ -20,12 +20,12 @@ static TTF_Font * font2;
 static char text[] = "SYSTEMS";
 static std::string font_path = "/home/cediw/Downloads/lcars_reference/LCARSGTJ3.ttf";
 
-LCARS_Text_Input * text_in;
+
 std::string example_text[] = {"IT JUST WORKS", "THIS IS GREAT", "LMAO"};
 int z = 0;
 
 static void exit_func() {
-	text_in->SetText(example_text[z++]);
+	
 }
 
 class TestInterface : public LCARS_Interface {
@@ -60,14 +60,22 @@ class TestInterface : public LCARS_Interface {
 				base_img
 			);
 
-			text_in = new LCARS_Text_Input(
+			// text_in = new LCARS_Text_Input(
+			// 	width/2 - 150,
+			// 	height/2 + 150,
+			// 	300,
+			// 	50,
+			// 	font2, "Authentification..."
+			// );
+			// text_in->SetPasswordField(true);
+
+			LCARS_InputField * inp = new LCARS_InputField(
 				width/2 - 150,
-				height/2 + 150,
-				300,
-				50,
-				font2, "Authentification..."
+			 	height/2 + 150,
+			 	300,
+			 	50,
+			 	font, "Authentification..."
 			);
-			text_in->SetPasswordField(true);
 
 			img1->Resize(base_img->w*resize_factor, base_img->h*resize_factor);
 
@@ -109,7 +117,8 @@ class TestInterface : public LCARS_Interface {
 			botdeco->AddButton(btn2);
 
 			AddComponent(img1);
-			AddComponent(text_in);
+			AddComponent(inp);
+			//AddComponent(text_in);
 		}
 
 		void Remap() {

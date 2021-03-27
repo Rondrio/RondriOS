@@ -1,0 +1,2 @@
+1. SDL2 / SDL2_gfx / SDL2_ttf / SDL_image
+2. Xlib / X11
