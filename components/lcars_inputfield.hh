@@ -7,6 +7,10 @@
 #include "../lcars_component.hh"
 #include "../paint_context.hh"
 
+enum input_filter {
+	IF_ALL = 0x0, IF_INT = 0x1, IF_FLOAT = 0x10, IF_ALPHA = 0x100, IF_SPECIAL = 0x1000
+};
+
 class LCARS_InputField : public LCARS_Component {
 
 	private:
@@ -14,7 +18,11 @@ class LCARS_InputField : public LCARS_Component {
 		TTF_Font *		m_font;
 
 		uint16_t		m_caret_position;
+		uint64_t		m_inputfilter;
 
+		std::string *	m_shown_string;
+
+		std::string		m_starred_string;
 		std::string		m_content_string;
 		std::string		m_placeholder_string;
 
@@ -30,8 +38,8 @@ class LCARS_InputField : public LCARS_Component {
 		uint8_t			m_padding;
 		uint8_t			m_vpadding;
 
+		bool FilterInput(char * text, int len);
 		void OnTextInput(SDL_TextInputEvent * ev);
-
 
 	public:
 					LCARS_InputField()							= delete;
@@ -48,6 +56,9 @@ class LCARS_InputField : public LCARS_Component {
 
 		void SetPaddingHorizontal	(uint8_t padding);
 		void SetPaddingVertical		(uint8_t padding);
+
+		void SetPasswordMode(bool b);
+		void SetInputFilter(uint64_t filter);
 
 		virtual bool PointInHitbox(int x, int y)			override;
 		virtual void Paint(PaintContext * paintctx)			override;

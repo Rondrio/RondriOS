@@ -60,14 +60,7 @@ class TestInterface : public LCARS_Interface {
 				base_img
 			);
 
-			// text_in = new LCARS_Text_Input(
-			// 	width/2 - 150,
-			// 	height/2 + 150,
-			// 	300,
-			// 	50,
-			// 	font2, "Authentification..."
-			// );
-			// text_in->SetPasswordField(true);
+			img1->Resize(base_img->w*resize_factor, base_img->h*resize_factor);
 
 			LCARS_InputField * inp = new LCARS_InputField(
 				width/2 - 150,
@@ -76,8 +69,8 @@ class TestInterface : public LCARS_Interface {
 			 	50,
 			 	font, "Authentification..."
 			);
-
-			img1->Resize(base_img->w*resize_factor, base_img->h*resize_factor);
+			inp->SetPasswordMode(true);
+			inp->SetInputFilter(IF_INT | IF_FLOAT);
 
 			LCARS_BigDeco * topdeco = new LCARS_BigDeco(20, 20, {
 					60,
@@ -118,7 +111,6 @@ class TestInterface : public LCARS_Interface {
 
 			AddComponent(img1);
 			AddComponent(inp);
-			//AddComponent(text_in);
 		}
 
 		void Remap() {

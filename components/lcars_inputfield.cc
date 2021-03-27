@@ -5,6 +5,22 @@
 
 #include "../lcars_component.hh"
 
+static bool isdigit(char c) {
+	return c >= '0' && c <= '9';
+}
+
+static bool isfloat(char c) {
+	return isdigit(c) || c == '.';
+}
+
+static bool isalpha(char c) {
+	return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
+}
+
+static bool isspecial(char c) {
+	return (!isdigit(c) && !isfloat(c) && !isalpha(c)) || c == '.';
+}
+
 LCARS_InputField::LCARS_InputField(int x, int y, int w, int h, TTF_Font * font, std::string placeholder) : LCARS_Component({x, y, w, h}) {
 
 	m_font					= font;
@@ -22,6 +38,9 @@ LCARS_InputField::LCARS_InputField(int x, int y, int w, int h, TTF_Font * font, 
 	m_padding			= 5;
 	m_vpadding			= 10;
 	m_caret_position	= 0;
+
+	m_inputfilter = IF_ALL;
+	m_shown_string = &m_content_string;
 }
 
 LCARS_InputField::~LCARS_InputField() {
@@ -34,28 +53,62 @@ LCARS_InputField::~LCARS_InputField() {
 
 // ------------ methods ------------------
 
-void LCARS_InputField::OnTextInput(SDL_TextInputEvent * ev) {
-	if(m_caret_position == m_content_string.size()) {
-		m_content_string += ev->text;
-		m_caret_position += strlen(ev->text);
+bool LCARS_InputField::FilterInput(char * text, int len) {
+	if(!m_inputfilter)
+		return true;
 
-	} else if(m_caret_position < m_content_string.size()) {
+	for(int i = 0; i < len; ++i) {
 
-		std::string pre		= m_content_string.substr(0, m_caret_position);
-		std::string post	= m_content_string.substr(m_caret_position);
+		char c = text[i];
 
-		pre += ev->text;
-
-		m_content_string = pre + post;
-		m_caret_position += strlen(ev->text);
+		if(
+			!((m_inputfilter & IF_INT)		&& isdigit(c)		||
+			(m_inputfilter & IF_FLOAT)		&& isfloat(c)		||
+			(m_inputfilter & IF_ALPHA)		&& isalpha(c) 		||
+			(m_inputfilter & IF_SPECIAL)	&& isspecial(c))) {
+				return false;
+		}
 	}
 
-	m_content_text = nullptr;
-	SetNeedsRepaint(true);
+	return true;
+}
+
+void LCARS_InputField::OnTextInput(SDL_TextInputEvent * ev) {
+	
+	int textlen = strlen(ev->text);
+
+	if(FilterInput(ev->text, textlen)) {
+
+		if(m_caret_position == m_content_string.size()) {
+			m_content_string += ev->text;
+			
+			for(int i = 0; i < textlen; ++i)
+				m_starred_string += '*';
+
+			m_caret_position += textlen;
+
+		} else if(m_caret_position < m_content_string.size()) {
+
+			std::string pre		= m_content_string.substr(0, m_caret_position);
+			std::string post	= m_content_string.substr(m_caret_position);
+
+			pre += ev->text;
+
+			for(int i = 0; i < textlen; ++i)
+				m_starred_string += '*';
+
+			m_content_string = pre + post;
+			m_caret_position += textlen;
+		}
+
+		m_content_text = nullptr;
+		SetNeedsRepaint(true);
+	}
 }
 
 void LCARS_InputField::SetPlaceholder(std::string placeholder) {
 	m_placeholder_string = placeholder;
+	m_placeholder_text = nullptr;
 	SetNeedsRepaint(true);
 }
 
@@ -83,6 +136,19 @@ void LCARS_InputField::SetPaddingVertical(uint8_t padding) {
 	SetNeedsRepaint(true);
 }
 
+void LCARS_InputField::SetPasswordMode(bool b) {
+	if(b)
+		m_shown_string = &m_starred_string;
+	else
+		m_shown_string = &m_content_string;
+
+	m_content_text = nullptr;
+}
+
+void LCARS_InputField::SetInputFilter(uint64_t filter) {
+	m_inputfilter = filter;
+}
+
 // ------------ overrides ----------------
 
 bool LCARS_InputField::PointInHitbox(int x, int y) {
@@ -101,23 +167,42 @@ void LCARS_InputField::Paint(PaintContext * paintctx) {
 	// TODO: Set Stroke Width
 	paintctx->DrawRect(&bg_border);
 
+	/* (Re-)Generate the Content Text */
 	if(!m_content_text) {
 		paintctx->SetFont(m_font);
 		paintctx->SetColor(m_content_color.r, m_content_color.g, m_content_color.b, m_content_color.a);
-		m_content_text = paintctx->PrepareBlendedText(0, 0, &m_content_string);
+		m_content_text = paintctx->PrepareBlendedText(0, 0, m_shown_string);
 	}
 
+	/* Draw the Content */
+	/* The if statement is a bit redundant but I'll keep it for saftey reasons. */
 	if(m_content_text) {
-
 		SDL_Rect src = {0, 0, m_content_text->bounds.w, m_content_text->bounds.h};
 		SDL_Rect dst = {m_padding, m_vpadding, m_content_text->bounds.w, m_content_text->bounds.h};
 
 		paintctx->DrawText(m_content_text, &src, &dst);
 	}
 
+	/* Prepare the Placeholder */
+	/* This must only be done when the Placeholder is not generated or must be regenereted */
+	/* for example because the Placeholder was changed during runtime. */
+	if(!m_placeholder_text) {
+		paintctx->SetFont(m_font);
+		paintctx->SetColor(m_placeholder_color.r, m_placeholder_color.g, m_placeholder_color.b, m_placeholder_color.a);
+		m_placeholder_text = paintctx->PrepareBlendedText(0, 0, &m_placeholder_string);
+	}
+
+	/* Draw the Placeholder is the Content String is empty. */
+	if(m_placeholder_text && m_content_string.size() == 0) {
+		SDL_Rect src = {0, 0, m_placeholder_text->bounds.w, m_placeholder_text->bounds.h};
+		SDL_Rect dst = {m_padding, m_vpadding, m_placeholder_text->bounds.w, m_placeholder_text->bounds.h};
+
+		paintctx->DrawText(m_placeholder_text, &src, &dst);
+	}
+
 	if(m_has_kb_focus) {
 
-		std::string substring = m_content_string.substr(0, m_caret_position);
+		std::string substring = m_shown_string->substr(0, m_caret_position);
 		int pixheight, pixlen;
 		TTF_SizeText(m_font, substring.c_str(), &pixlen, &pixheight);
 
@@ -153,6 +238,8 @@ void LCARS_InputField::HandleSDLEvent(SDL_Event * ev) {
 				if(m_content_string.size() > 0) {
 					if(m_caret_position == m_content_string.size()) {
 						m_content_string.pop_back();
+						m_starred_string.pop_back();
+
 						m_caret_position--;
 						m_content_text = nullptr;
 					} else if(m_caret_position < m_content_string.size()) {
@@ -162,6 +249,7 @@ void LCARS_InputField::HandleSDLEvent(SDL_Event * ev) {
 
 						if(pre.size() > 0) {
 							pre.pop_back();
+							m_starred_string.pop_back();
 							m_caret_position--;
 
 							m_content_string = pre + post;
