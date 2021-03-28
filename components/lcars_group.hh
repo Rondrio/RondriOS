@@ -1,3 +1,6 @@
+#ifndef LCARS_GROUP_HH_
+#define LCARS_GROUP_HH_
+
 #include "../lcars_button.hh"
 #include "../lcars_component.hh"
 
@@ -51,3 +54,5 @@ class LCARS_Group : public LCARS_Component {
 
         LCARS_Group& operator=(const LCARS_Group&) = delete;
 };
+
+#endif

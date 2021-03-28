@@ -7,6 +7,7 @@
 #include <string>
 
 #include "paint_context_ex.hh"
+#include "lcars_text.hh"
 
 PaintContext::PaintContext(SDL_Renderer * renderer, SDL_Texture * buffer, SDL_Rect bounds) {
 	m_renderer	= renderer;
@@ -174,6 +175,10 @@ text_t * PaintContext::PrepareSolidText(int16_t x, int16_t y, std::string * str)
 	return PrepareText(x, y, str, surf);
 }
 
+void PaintContext::PrepareText(LCARS_Text * text) {
+	text->Regenerate(m_renderer);
+}
+
 void PaintContext::DestroyText(text_t * text) {
 	if(text->tex_text)
 		SDL_DestroyTexture(text->tex_text);
@@ -185,7 +190,27 @@ void PaintContext::DrawText(text_t * text, SDL_Rect * src, SDL_Rect * dst) {
 
 	SDL_SetRenderTarget(m_renderer, m_texture);
 	if(SDL_RenderCopy(m_renderer, text->tex_text, src, &dst_modded) == -1)
-		std::cerr << "ERROR: " << SDL_GetError() << std::endl;
+		std::cerr << "ERROR I: " << SDL_GetError() << std::endl;
+
+	SDL_SetRenderTarget(m_renderer, m_buffer);
+}
+
+void PaintContext::DrawText(int x, int y, LCARS_Text * text) {
+
+	SDL_Rect text_bounds = text->GetBounds();
+
+	SDL_Rect modded_dst = {
+		x, y, text_bounds.w, text_bounds.h
+	};
+
+	SDL_Rect modded_src = {
+		0, 0, text_bounds.w, text_bounds.h
+	};
+
+	SDL_SetRenderTarget(m_renderer, m_texture);
+	if(SDL_RenderCopy(m_renderer, text->GetTexture(), &modded_src, &modded_dst) == -1)
+		std::cerr << "ERROR I: " << SDL_GetError() << std::endl;
+
 	SDL_SetRenderTarget(m_renderer, m_buffer);
 }
 

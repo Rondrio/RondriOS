@@ -13,8 +13,12 @@
 #include <SDL2/SDL_image.h>
 
 #include "lcars_keylistener.hh"
+
 #include "interfaces/test_interface.hh"
+#include "interfaces/home_interface.cpp"
+
 #include "simple_list.hh"
+#include "lcars_error.hh"
 
 static bool grabbed = false, resize = false;
 static int grab_x, grab_y, grab_off_x, grab_off_y;
@@ -189,7 +193,7 @@ int LCARS::HandleEventX(XEvent * ev) {
 
 			XRaiseWindow(m_dpy, bpe.window);
 
-			GetScreen()->GetInterface()->SetNeedsWindowRepaint(true);
+			GetScreen()->GetInterface()->SetNeedsBufferRepaint(true);
 			break;
 		}
 
@@ -217,7 +221,7 @@ int LCARS::HandleEventX(XEvent * ev) {
 					XResizeWindow(m_dpy, me.window, w, h);
 			}
 			
-			m_active_lcars_screen->GetInterface()->SetNeedsWindowRepaint(true);
+			m_active_lcars_screen->GetInterface()->SetNeedsBufferRepaint(true);
 
 			break;
 		}
@@ -298,7 +302,7 @@ void LCARS::UnframeWindow(Window w) {
 
 	m_windows -= w;
 	XDestroyWindow(m_dpy, w);
-	m_active_lcars_screen->GetInterface()->SetNeedsWindowRepaint(true);
+	m_active_lcars_screen->GetInterface()->SetNeedsBufferRepaint(true);
 }
 
 Window LCARS::GetFocusedWindow() {
@@ -308,15 +312,17 @@ Window LCARS::GetFocusedWindow() {
 int LCARS::Init() {
 
 	/* INITIALIZE SDL & XSERVER-CONNECTION */
-	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER);
-	TTF_Init();
-	IMG_Init(IMG_INIT_JPG|IMG_INIT_PNG);
+	
+	if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER) < 0) {
+		LOGEX("FATAL ERROR in LCARS::Init()", "Could not initialize SDL", SDL_GetError());
+	}
+	
+	if(TTF_Init() == -1) {
+		LOGEX("FATAL ERROR in LCARS::Init()", "Could not initialize TTF", TTF_GetError());
+	}
 
-	//SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 0);
-
-	if(!m_dpy) {
-		std::cerr << "XOpenDisplay(): Could not open Display.\n";
-		return 0;
+	if(IMG_Init(IMG_INIT_JPG|IMG_INIT_PNG) == 0) {
+		LOGEX("FATAL ERROR in LCARS::Init()", "Could not initialize IMG", IMG_GetError());
 	}
 
 	int screen 	= DefaultScreen	(m_dpy);
@@ -327,14 +333,23 @@ int LCARS::Init() {
 
 	/* SETUP CURSOR */
 	SDL_Cursor * cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
-	SDL_SetCursor(cursor);
-	SDL_ShowCursor(true);
+
+	if(cursor) {
+		SDL_SetCursor(cursor);
+		SDL_ShowCursor(true);
+
+	} else {
+		LOGEX("ERROR in LCARS::Init()", "Could not create System-Cursor", SDL_GetError());
+	}
 
 	/* SETUP LCARS_SCREENS */
 	m_active_lcars_screen = new LCARS_Screen(m_dpy, 0, 0, m_screen->width, m_screen->height);
-	TestInterface * test_interface = new TestInterface(0, 0, m_screen->width, m_screen->height);
-	m_active_lcars_screen->SetInterface(test_interface);
-	test_interface->Init();
+	// TestInterface * test_interface = new TestInterface(0, 0, m_screen->width, m_screen->height);
+	// m_active_lcars_screen->SetInterface(test_interface);
+	// test_interface->Init();
+
+	HomeInterface * home_interface = new HomeInterface(0, 0, m_screen->width, m_screen->height);
+	m_active_lcars_screen->SetInterface(home_interface);
 
 	XSelectInput(m_dpy, m_root,
 			SubstructureRedirectMask 	|

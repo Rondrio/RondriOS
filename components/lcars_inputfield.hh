@@ -1,5 +1,5 @@
-#ifndef _LCARS_INPUTFIELD_HH_
-#define _LCARS_INPUTFIELD_HH_
+#ifndef LCARS_INPUTFIELD_HH_
+#define LCARS_INPUTFIELD_HH_
 
 #include <SDL2/SDL_ttf.h>
 #include <string>

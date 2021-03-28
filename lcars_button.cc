@@ -49,11 +49,23 @@ void LCARS_Button::OnMouseDown(SDL_MouseButtonEvent * ev) {
 
 void LCARS_Button::OnMouseUp(SDL_MouseButtonEvent * ev) {
 	m_pressed = false;
+
+	for(int i = 0; i < m_action_listeners.Size(); ++i)
+		m_action_listeners[i]();
+
 	SetNeedsRepaint(true);
 }
 
 void LCARS_Button::OnMouseMove(SDL_MouseMotionEvent * ev) {
 	
+}
+
+void LCARS_Button::AddActionListener(action_listener listener) {
+	m_action_listeners += listener;
+}
+
+void LCARS_Button::RemActionListener(action_listener listener) {
+	m_action_listeners -= listener;
 }
 
 void LCARS_Button::SetFont(TTF_Font * font) {

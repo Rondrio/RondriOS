@@ -8,15 +8,12 @@
 
 #include "../lcars_component.hh"
 #include "../paint_context.hh"
+#include "../lcars_text.hh"
 
 class LCARS_Label : public LCARS_Component {
 
 	private:
-		TTF_Font *	m_font;
-		std::string m_font_path;
-		SDL_Color	m_font_color;
-		text_t *	m_text;
-		std::string m_text_string;
+		LCARS_Text * m_content_text;
 
 		bool		m_draw_bg;
 		SDL_Color	m_bg_color;
@@ -36,8 +33,7 @@ class LCARS_Label : public LCARS_Component {
 		SDL_Color	GetBGColor	();
 		void		SetBGColor	(SDL_Color c);
 
-		void		SetFont(TTF_Font * font);
-		TTF_Font *	GetFont();
+		void SetFont(std::string font_path);
 
 		virtual void SetHeight(int h) override;
 

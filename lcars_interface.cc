@@ -12,15 +12,14 @@ LCARS_Interface::LCARS_Interface(int x, int y, int width, int height) : LCARS_IC
 	m_cmp_kb_focus	= nullptr;
 	m_cmp_pd_focus	= nullptr;
 
-	m_window_repaint	= false;
-	m_components		= new smp::list<LCARS_Component *>();
+	m_needs_buffer_repaint	= false;
+	m_screen_texture		= nullptr;
 
-	m_screen_texture = nullptr;
+	hp = height/1000.0;
+	wp = width/1000.0;
 }
 
 LCARS_Interface::~LCARS_Interface() {
-	delete m_components;
-
 	if(m_screen_texture)
 		SDL_DestroyTexture(m_screen_texture);
 }
@@ -50,8 +49,8 @@ void LCARS_Interface::Draw(SDL_Renderer * renderer) {
 		SDL_SetRenderTarget	(renderer, nullptr);
 
 		/* PAINT Components */
-		for(int i = 0; i < m_components->Size(); ++i) {
-			LCARS_Component * cmp = (*m_components)[i];
+		for(int i = 0; i < m_components.Size(); ++i) {
+			LCARS_Component * cmp = m_components[i];
 			cmp->Draw(renderer, m_screen_texture);
 		}
 
@@ -65,20 +64,20 @@ void LCARS_Interface::Draw(SDL_Renderer * renderer) {
 	/* Repaint when a Window got moved */
 	/* The strategy is that the Screen Buffer (all LCARS_Components, for example) */
 	/* is redrawn and on top of that the Window Decoration is Drawn seperatly. */
-	// if(m_window_repaint) {
+	if(m_needs_buffer_repaint) {
 
-	// 	SDL_SetRenderTarget(renderer, nullptr);
-	// 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+		SDL_SetRenderTarget(renderer, nullptr);
+		SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
 
-	// 	/* Copy Screen Buffer */
-	// 	if(SDL_RenderCopy(renderer, m_screen_texture, nullptr, nullptr) == -1) {
-	// 		std::cerr << "ERROR SDL_RenderCopy(): " << SDL_GetError() << std::endl;
-	// 		exit(0);
-	// 	}
+		/* Copy Screen Buffer */
+		if(SDL_RenderCopy(renderer, m_screen_texture, nullptr, nullptr) == -1) {
+			std::cerr << "ERROR SDL_RenderCopy(): " << SDL_GetError() << std::endl;
+			exit(0);
+		}
 
-	// 	SDL_RenderPresent(renderer);
-	// 	m_window_repaint = false;
-	// }
+		SDL_RenderPresent(renderer);
+		m_needs_buffer_repaint = false;
+	}
 
 	/* Priority Redraws. (This implementation allows for one Priority Redraw per "Frame") */
 	/* This may (or should) be changed in the future. */
@@ -99,14 +98,14 @@ void LCARS_Interface::AttachToScreen(LCARS_Screen * screen) {
 }
 
 void LCARS_Interface::AddComponent(LCARS_Component * cmp) {
-	*m_components += cmp;
+	m_components += cmp;
 	cmp->SetParent(this);
 
 	cmp->SetInterface(this);
 }
 
 void LCARS_Interface::RemComponent(LCARS_Component * cmp) {
-	*m_components -= cmp;
+	m_components -= cmp;
 
 	cmp->SetInterface(nullptr);
 }
@@ -119,8 +118,8 @@ void LCARS_Interface::SetNeedsRepaint(bool b) {
 	m_needs_repaint = b;
 }
 
-void LCARS_Interface::SetNeedsWindowRepaint(bool b) {
-	m_window_repaint = true;
+void LCARS_Interface::SetNeedsBufferRepaint(bool b) {
+	m_needs_buffer_repaint = true;
 }
 
 LCARS_Screen * LCARS_Interface::GetScreen() {
@@ -128,8 +127,8 @@ LCARS_Screen * LCARS_Interface::GetScreen() {
 }
 
 LCARS_Component * LCARS_Interface::ComponentAt(int x, int y) {
-	for(int i = 0; i < m_components->Size(); ++i) {
-		LCARS_Component * cmp = (*m_components)[i];
+	for(int i = 0; i < m_components.Size(); ++i) {
+		LCARS_Component * cmp = m_components[i];
 		LCARS_Component * cmp_at;
 
 		if((cmp_at = cmp->ComponentAt(x, y)))

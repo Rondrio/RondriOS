@@ -17,11 +17,11 @@ class LCARS_Interface : public LCARS_ICP {
 
 	protected:
 
-		volatile bool	m_window_repaint;
+		volatile bool	m_needs_buffer_repaint;
 
 		SDL_Texture * m_screen_texture;
 
-		smp::list<LCARS_Component *> *	m_components;
+		smp::list<LCARS_Component *>	m_components;
 		std::queue<LCARS_Component *>	m_priority_repaints;
 
 		LCARS_Screen	*				m_lcars_screen;
@@ -29,6 +29,9 @@ class LCARS_Interface : public LCARS_ICP {
 
 		LCARS_Component *				m_cmp_pd_focus;
 		LCARS_Component *				m_cmp_kb_focus;
+
+		double wp;
+		double hp;
 
 		LCARS_Interface(int x, int y, int width, int height);
 
@@ -46,8 +49,8 @@ class LCARS_Interface : public LCARS_ICP {
 
 		void AddPriorityRepaint(LCARS_Component * cmp);
 
-		void SetNeedsRepaint(bool b);
-		void SetNeedsWindowRepaint(bool b);
+		void SetNeedsRepaint		(bool b);
+		void SetNeedsBufferRepaint	(bool b);
 
 		void SetFocusedWindow(Window w);
 
@@ -56,7 +59,9 @@ class LCARS_Interface : public LCARS_ICP {
 
 		void DispatchSDLEvents(SDL_Event * ev);
 
-		virtual void Remap() = 0;
+		virtual void Remap()		= 0;
+		virtual void OnEnable()		= 0;
+		virtual void OnDisable()	= 0;
 
 		LCARS_Interface& operator=(const LCARS_Interface&) = delete;
 };

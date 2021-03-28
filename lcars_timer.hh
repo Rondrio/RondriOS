@@ -1,5 +1,5 @@
-#ifndef _LCARS_TIMER_HH_
-#define _LCARS_TIMER_HH_
+#ifndef LCARS_TIMER_HH_
+#define LCARS_TIMER_HH_
 
 #include <cstdint>
 

@@ -7,16 +7,13 @@
 #include <X11/keysym.h>
 #include <X11/XKBlib.h>
 #include <X11/X.h>
+#include <X11/XF86keysym.h>
 
 #include <signal.h>
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL2_gfxPrimitives.h>
-
 #include "lcars.hh"
 #include "lcars_keylistener.hh"
-
-#include <X11/XF86keysym.h>
+#include "lcars_error.hh"
 
 /*
  * Round Button
@@ -83,23 +80,34 @@ static KeyListener keylisteners[] = {
 
 int main(int argc, char ** argv) {
 
+	if(argc >= 2) {
+		LOG_Init(argv[1]);
+	} else {
+		LOG("ERROR in main()", "Could not initialize LOG because of too few arguments.");
+	}
+
 	//TODO: Improve
 	signal(SIGTERM, sigterm);
 	signal(SIGINT, sigterm);
 
 	Display * dpy = XOpenDisplay(NULL);
 
-	LCARS lcars(dpy);
+	if(dpy) {
 
-	lcars.Init();
+		LCARS lcars(dpy);
 
-	lcars.AddKeyListener(&keylisteners[0]);
-	lcars.AddKeyListener(&keylisteners[1]);
-	lcars.AddKeyListener(&keylisteners[2]);
-	lcars.AddKeyListener(&keylisteners[3]);
-	lcars.AddKeyListener(&keylisteners[4]);
-	lcars.AddKeyListener(&keylisteners[5]);
+		lcars.Init();
 
-	lcars.Run();
-	lcars.Exit(1);
+		lcars.AddKeyListener(&keylisteners[0]);
+		lcars.AddKeyListener(&keylisteners[1]);
+		lcars.AddKeyListener(&keylisteners[2]);
+		lcars.AddKeyListener(&keylisteners[3]);
+		lcars.AddKeyListener(&keylisteners[4]);
+		lcars.AddKeyListener(&keylisteners[5]);
+
+		lcars.Run();
+		lcars.Exit(1);
+	}
+
+	LOG("FATAL ERROR in main()", "Could not display.");
 }

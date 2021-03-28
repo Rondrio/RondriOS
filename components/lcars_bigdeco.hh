@@ -36,7 +36,7 @@ class LCARS_BigDeco : public LCARS_Component {
 
 	private:
 		static constexpr double c_ellipse_factor	= 39.0/46.0;
-		static constexpr double c_arc_factor		= 185.0/120.;
+		static constexpr double c_arc_factor		= 185.0/120.0;
 
 		uint16_t m_arm_height;
 		uint16_t m_arm_width;

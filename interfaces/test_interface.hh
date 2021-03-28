@@ -25,7 +25,7 @@ std::string example_text[] = {"IT JUST WORKS", "THIS IS GREAT", "LMAO"};
 int z = 0;
 
 static void exit_func() {
-	
+	exit(0);
 }
 
 class TestInterface : public LCARS_Interface {
@@ -43,6 +43,8 @@ class TestInterface : public LCARS_Interface {
 			LCARS_Button_Rounded * btn2 = new LCARS_Button_Rounded(0, 85, 200, 60, font, "Shutdown");
 			btn2->SetRoundLeft(false);
 			btn2->SetRoundRight(false);
+
+			btn2->AddActionListener(exit_func);
 
 			LCARS_Group * btngrp1 = new LCARS_Group(20, 425, 1, 2, 200, 80, 0, 5);
 			btngrp1->SetForceHeight(false);
@@ -125,13 +127,16 @@ class TestInterface : public LCARS_Interface {
 			}*/
 		}
 
-		void Init() {
-			//GetScreen()->AddTimer(5, 3, exit_func);
+		void OnEnable() {
+			
 		}
 
-		LCARS_Interface& operator=(LCARS_Interface& rhs) {
-			exit(0);
-			return rhs;
+		void OnDisable() {
+
+		}
+
+		void Init() {
+			//GetScreen()->AddTimer(5, 3, exit_func);
 		}
 
 };

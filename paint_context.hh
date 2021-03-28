@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include "lcars_text.hh"
+
 struct bezier_t {
 	signed short * vx;
 	signed short * vy;
@@ -69,9 +71,11 @@ class PaintContext {
 		 * */
 				text_t *	PrepareBlendedText(int16_t x, int16_t y, std::string * str);
 				text_t *	PrepareSolidText(int16_t x, int16_t y, std::string * str);
+				void		PrepareText(LCARS_Text * text);
 		static	void		DestroyText(text_t * text);
 
 		void DrawText(text_t * text, SDL_Rect * src, SDL_Rect * dst);
+		void DrawText(int x, int y, LCARS_Text * text);
 
 		PaintContext& operator=(const PaintContext&) = delete;
 };
