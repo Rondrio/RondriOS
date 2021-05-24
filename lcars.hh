@@ -5,96 +5,103 @@
 #ifndef LCARS_HH_
 #define LCARS_HH_
 
-#include <X11/Xlib.h>
+//#include <X11/Xlib.h>
 
 #include "simple_list.hh"
 #include "lcars_screen.hh"
 #include "lcars_keylistener.hh"
 
-class LCARS {
-	private:
+namespace LCARS {
 
-		static	XErrorHandler		s_x_error_handler;
-				Display 		*	m_dpy;
-				Screen			*	m_screen;
-				LCARS_Screen 	*	m_active_lcars_screen;
-				Window				m_root;
+	#include <X11/Xlib.h>
 
-				Window	m_focused_window;
+	class LCARS {
 
-				smp::list<Window>				m_windows;
-				smp::list<KeyListener *> *		m_key_listeners;
+		private:
 
-		volatile bool m_running;
+			static	XErrorHandler		s_x_error_handler;
+					Display 		*	m_dpy;
+					Screen			*	m_screen;
+					Monitor 		*	m_active_lcars_screen;
+					Window				m_root;
 
-		static int ErrorHandler(Display * dpy, XErrorEvent * ev);
+					Window	m_focused_window;
 
-	public:
-					LCARS()				= delete;
-					LCARS(const LCARS&)	= delete;
-					LCARS(Display * dpy);
-		virtual ~	LCARS();
+					smp::list<Window>				m_windows;
+					smp::list<KeyListener *> *		m_key_listeners;
 
-		void AddKeyListener(KeyListener * kl);
+			volatile bool m_running;
 
-		/**
-		 * Handles the Events from the X Server.
-		 * @param ev Pointer to the XEvent structure.
-		 * @return 0 if an error occurred.
-		 * */
-		int HandleEventX	(XEvent * ev);
+			static int ErrorHandler(Display * dpy, XErrorEvent * ev);
 
-		/**
-		 * Handles the Events from the SDL Window representing the LCARS' Main Frame.
-		 * @param ev Pointer to the SDL_Event structure.
-		 * @return 0 if an error occurred.
-		 * */
-		int HandleEventSDL	(SDL_Event * ev);
+		public:
+						LCARS()				= delete;
+						LCARS(const LCARS&)	= delete;
+						LCARS(Display * dpy);
+			virtual ~	LCARS();
 
-		int	GetWindowCount	();
+			void AddKeyListener(KeyListener * kl);
 
-		/**
-		 * Frames the given Window adds an entry of the resulting Pair to the
-		 * internal Registry.
-		 * 
-		 * @param w The Window to reparent into a Frame.
-		*/
-		void FrameWindow	(Window w);
+			/**
+			 * Handles the Events from the X Server.
+			* @param ev Pointer to the XEvent structure.
+			* @return 0 if an error occurred.
+			* */
+			int HandleEventX	(XEvent * ev);
 
-		/**
-		 * Removes the Frame around a Window.
-		 * @param w The Window to unframe.
-		*/
-		void UnframeWindow	(Window w);
+			/**
+			 * Handles the Events from the SDL Window representing the LCARS' Main Frame.
+			* @param ev Pointer to the SDL_Event structure.
+			* @return 0 if an error occurred.
+			* */
+			int HandleEventSDL	(SDL_Event * ev);
 
-		Window GetFocusedWindow();
+			int	GetWindowCount	();
 
-		/**
-		 * Initializes the LCARS.
-		 * */
-		int Init	();
+			/**
+			 * Frames the given Window adds an entry of the resulting Pair to the
+			* internal Registry.
+			* 
+			* @param w The Window to reparent into a Frame.
+			*/
+			void FrameWindow	(Window w);
 
-		/**
-		 * Starts the Event-Loop of the LCARS. There is no going back after this as it will lock the Thread in
-		 * an endless loop.
-		 * */
-		int Run		();
+			/**
+			 * Removes the Frame around a Window.
+			* @param w The Window to unframe.
+			*/
+			void UnframeWindow	(Window w);
 
-		/**
-		 * Cleans up allocated Memory, closes Connections and stops the execution of the LCARS.
-		 * @param exitcode The Exitcode with which the Program will stop.
-		 * @return The Exitcode given as parameter.
-		 * */
-		int Exit	(int exitcode);
+			Window GetFocusedWindow();
 
-		void CloseFocusedWindow();
+			/**
+			 * Initializes the LCARS.
+			* */
+			int Init	();
 
-		Display * GetDisplay();
-		LCARS_Screen * GetScreen();
+			/**
+			 * Starts the Event-Loop of the LCARS. There is no going back after this as it will lock the Thread in
+			* an endless loop.
+			* */
+			int Run		();
 
-		int Checkmod(XKeyEvent ke, KeyListener listener);
+			/**
+			 * Cleans up allocated Memory, closes Connections and stops the execution of the LCARS.
+			* @param exitcode The Exitcode with which the Program will stop.
+			* @return The Exitcode given as parameter.
+			* */
+			int Exit	(int exitcode);
 
-		LCARS& operator=(const LCARS&) = delete;
-};
+			void CloseFocusedWindow();
+
+			Display * GetDisplay();
+			Monitor * GetScreen();
+
+			int Checkmod(XKeyEvent ke, KeyListener listener);
+
+			LCARS& operator=(const LCARS&) = delete;
+	};
+
+}
 
 #endif /* LCARS_HH_ */

@@ -9,63 +9,65 @@
 #include "lcars_screen.hh"
 #include "lcars_component.hh"
 
-/* Forward declarations */
-class LCARS_Screen;
-class LCARS_Component;
+namespace LCARS {
 
-class LCARS_Interface : public LCARS_ICP {
+	/* Forward declarations */
+	class Monitor;
+	class Component;
 
-	protected:
+	class Interface : public ICP {
 
-		volatile bool	m_needs_buffer_repaint;
+		protected:
 
-		SDL_Texture * m_screen_texture;
+			volatile bool	m_needs_buffer_repaint;
 
-		smp::list<LCARS_Component *>	m_components;
-		std::queue<LCARS_Component *>	m_priority_repaints;
+			SDL_Texture * m_screen_texture;
 
-		LCARS_Screen	*				m_lcars_screen;
-		SDL_Rect 						m_bounds;
+			smp::list<Component *>	m_components;
+			std::queue<Component *>	m_priority_repaints;
 
-		LCARS_Component *				m_cmp_pd_focus;
-		LCARS_Component *				m_cmp_kb_focus;
+			Monitor	*				m_lcars_screen;
+			SDL_Rect 						m_bounds;
 
-		double wp;
-		double hp;
+			Component *				m_cmp_pd_focus;
+			Component *				m_cmp_kb_focus;
 
-		LCARS_Interface(int x, int y, int width, int height);
+			double wp;
+			double hp;
 
-	public:
-						LCARS_Interface	()							= delete;
-						LCARS_Interface	(const LCARS_Interface&)	= delete;
-		virtual ~		LCARS_Interface	();
+			Interface(int x, int y, int width, int height);
 
-		void Draw(SDL_Renderer * renderer);
+		public:
+							Interface	()							= delete;
+							Interface	(const Interface&)	= delete;
+			virtual ~		Interface	();
 
-		void AttachToScreen(LCARS_Screen * screen);
+			void Draw(SDL_Renderer * renderer);
 
-		void AddComponent	(LCARS_Component * cmp);
-		void RemComponent	(LCARS_Component * cmp);
+			void AttachToScreen(Monitor * screen);
 
-		void AddPriorityRepaint(LCARS_Component * cmp);
+			void AddComponent	(Component * cmp);
+			void RemComponent	(Component * cmp);
 
-		void SetNeedsRepaint		(bool b);
-		void SetNeedsBufferRepaint	(bool b);
+			void AddPriorityRepaint(Component * cmp);
 
-		void SetFocusedWindow(Window w);
+			void SetNeedsRepaint		(bool b);
+			void SetNeedsBufferRepaint	(bool b);
 
-		LCARS_Screen	*	GetScreen();
-		LCARS_Component	*	ComponentAt(int x, int y);
+			void SetFocusedWindow(Window w);
 
-		void DispatchSDLEvents(SDL_Event * ev);
+			Monitor	*	GetScreen();
+			Component	*	ComponentAt(int x, int y);
 
-		virtual void Remap()		= 0;
-		virtual void OnEnable()		= 0;
-		virtual void OnDisable()	= 0;
+			void DispatchSDLEvents(SDL_Event * ev);
 
-		LCARS_Interface& operator=(const LCARS_Interface&) = delete;
-};
+			virtual void Remap()		= 0;
+			virtual void OnEnable()		= 0;
+			virtual void OnDisable()	= 0;
 
+			Interface& operator=(const Interface&) = delete;
+	};
 
+}
 
 #endif /* LCARS_INTERFACE_HH_ */

@@ -14,6 +14,7 @@
 #include "lcars.hh"
 #include "lcars_keylistener.hh"
 #include "lcars_error.hh"
+#include "lcars_parser.hh"
 
 /*
  * Round Button
@@ -41,17 +42,17 @@ static void sigterm(int i) {
 	exit(0);
 }
 
-static void quit(LCARS * lcars, Arg * arg) {
+static void quit(LCARS::LCARS * lcars, LCARS::Arg * arg) {
 	lcars->Exit(arg->i);
 }
 
-static void close(LCARS * lcars, Arg * arg) {
+static void close(LCARS::LCARS * lcars, LCARS::Arg * arg) {
 	// lcars->CloseFocusedWindow();
 	// lcars->GetScreen()->GetInterface()->SetNeedsRepaint(true);
 	lcars->UnframeWindow(lcars->GetFocusedWindow());
 }
 
-static void summon(LCARS * lcars, Arg * arg) {
+static void summon(LCARS::LCARS * lcars, LCARS::Arg * arg) {
 	Display * dpy = lcars->GetDisplay();
 
 	if(fork() == 0) {
@@ -69,7 +70,7 @@ static char * pa_vol_rise[] = {(char *)"pactl", (char *)"set-sink-volume", 	(cha
 static char * pa_vol_mute[] = {(char *)"pactl", (char *)"set-sink-mute", 	(char *)"@DEFAULT_SINK@", (char *)"toggle", NULL};
 
 
-static KeyListener keylisteners[] = {
+static LCARS::KeyListener keylisteners[] = {
 	{XK_q, 						ShiftMask|Mod4Mask, 	quit, 		{.i = 1}},
 	{XK_c, 						ShiftMask|Mod4Mask, 	close, 		{.i = 0}},
 	{XK_Return, 				ShiftMask|Mod4Mask, 	summon, 	{.v = terminalcmd}},
@@ -81,9 +82,9 @@ static KeyListener keylisteners[] = {
 int main(int argc, char ** argv) {
 
 	if(argc >= 2) {
-		LOG_Init(argv[1]);
+		LCARS::LOG_Init(argv[1]);
 	} else {
-		LOG("ERROR in main()", "Could not initialize LOG because of too few arguments.");
+		LCARS::LOG("ERROR in main()", "Could not initialize LOG because of too few arguments.");
 	}
 
 	//TODO: Improve
@@ -94,7 +95,7 @@ int main(int argc, char ** argv) {
 
 	if(dpy) {
 
-		LCARS lcars(dpy);
+		LCARS::LCARS lcars(dpy);
 
 		lcars.Init();
 
@@ -109,5 +110,8 @@ int main(int argc, char ** argv) {
 		lcars.Exit(1);
 	}
 
-	LOG("FATAL ERROR in main()", "Could not display.");
+	LCARS::LOG("FATAL ERROR in main()", "Could not display.");
+
+	// LCARS::Parser parser("/home/cediw/Downloads/lcars_reference/interface.xml");
+	// parser.Parse();
 }

@@ -8,13 +8,14 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-static int			logfd;
+
+static int			logfd = -1;
 static std::string	log_directory;
 static std::string	log_file;
 
-int LOG_Init(std::string log_directory) {
+int LCARS::LOG_Init(std::string log_directory) {
 
-	if(log_directory[log_directory.size() -1] != '/') {
+	/*if(log_directory[log_directory.size() -1] != '/') {
 		log_directory += '/';
 	}
 
@@ -36,24 +37,24 @@ int LOG_Init(std::string log_directory) {
 		perror("logfd");
 		return -1;
 	}
-
+*/
 	return 0;
 }
 
-void LOG_Quit() {
+void LCARS::LOG_Quit() {
 	if(logfd != -1) {
 		close(logfd);
 	}
 }
 
-void LOG(std::string src, std::string reason) {
+void LCARS::LOG(std::string src, std::string reason) {
 	if(logfd != -1) {
 		dprintf(logfd, "%s: %s\n", src.c_str(), reason.c_str());
 	}
 	std::cerr << src << ": " << reason << std::endl;
 }
 
-void LOGEX(std::string src, std::string reason, std::string extra) {
+void LCARS::LOGEX(std::string src, std::string reason, std::string extra) {
 	if(logfd != -1) {
 		dprintf(logfd, "%s: %s - %s\n", src.c_str(), reason.c_str(), extra.c_str());
 	}

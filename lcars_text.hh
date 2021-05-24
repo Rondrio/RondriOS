@@ -6,68 +6,88 @@
 #include <string>
 #include <cstdint>
 
-class LCARS_Font {
-	private:
-		TTF_Font *	m_font;
-		std::string m_font_path;
-		uint16_t	m_ptsize;
-		SDL_Rect	m_bounds;
+namespace LCARS {
 
-		int Regenerate();
+	class Font {
+		private:
+			TTF_Font *	m_font;
+			std::string m_font_path;
+			uint16_t	m_ptsize;
+			SDL_Rect	m_bounds;
 
-	public:
-					LCARS_Font()					= delete;
-					LCARS_Font(const LCARS_Font&)	= delete;
-					LCARS_Font(std::string font_path, uint16_t ptsize);
-		virtual ~	LCARS_Font();
+			int Regenerate();
 
-		void		SetPointSize(uint16_t ptsize);
-		uint16_t 	GetPointSize();
+			
+		public:
+						Font()					= delete;
+						Font(const Font&)	= delete;
+						Font(std::string font_path, uint16_t ptsize);
+			virtual ~	Font();
 
-		void		SetFont(std::string font_path);
-		TTF_Font *	GetFont();
+			void		SetPointSize(uint16_t ptsize);
+			uint16_t 	GetPointSize();
 
-		void		QuerySize(std::string text, int * w, int * h);
+			void		SetFont(std::string font_path);
+			TTF_Font *	GetFont();
 
-		virtual LCARS_Font& operator=(const LCARS_Font&) = delete;
-};
+			void		QuerySize(std::string text, int * w, int * h);
 
-class LCARS_Text {
+			virtual Font& operator=(const Font&) = delete;
+	};
 
-	private:
-		std::string		m_text;
-		LCARS_Font *	m_font;
+	class Text {
 
-		SDL_Color		m_color;
-		SDL_Texture *	m_texture;
-		bool			m_needs_regeneration;
+		private:
+			std::string		m_text;
+			Font *			m_font;
 
-	public:
-					LCARS_Text()					= delete;
-					LCARS_Text(const LCARS_Text&)	= delete;
-					LCARS_Text(std::string text, std::string font_path, uint16_t ptsize);
-		virtual ~	LCARS_Text();
+			SDL_Color		m_color;
+			SDL_Texture *	m_texture;
+			SDL_Surface *	m_surface;
+			bool			m_needs_regeneration;
 
-		void Regenerate(SDL_Renderer * renderer);
+			Text(std::string text, uint16_t ptsize);
 
-		void		SetText	(std::string text);
-		std::string GetText	();
+		public:
+						Text()				= delete;
+						Text(const Text&)	= delete;
+						Text(std::string text, std::string font_path, uint16_t ptsize);
+						Text(std::string text, Font * font);
+			virtual ~	Text();
 
-		void InsertText	(std::string text, uint16_t position);
-		void Append		(std::string text);
+			void Regenerate(SDL_Renderer * renderer);
 
-		void PopBack	(uint16_t count);
-		void PopAt		(uint16_t position, uint16_t count);
+			void		SetText	(std::string text);
+			std::string GetText	();
 
-		void SetFont	(std::string path);
-		void SetFontSize(uint16_t ptsize);
+			void InsertText	(std::string text, uint16_t position);
+			void Append		(std::string text);
 
-		void SetColor(SDL_Color color);
-		
-		SDL_Rect		GetBounds();
-		SDL_Texture *	GetTexture();
+			void PopBack	(uint16_t count);
+			void PopAt		(uint16_t position, uint16_t count);
 
-		virtual LCARS_Text& operator=(const LCARS_Text&) = delete;
-};
+			void SetFont	(std::string path);
+			void SetFont	(Font * font);
+			void SetFontSize(uint16_t ptsize);
+
+			void SetColor(SDL_Color color);
+
+			int Length();
+			
+			SDL_Rect		GetBounds();
+			SDL_Texture *	GetTexture();
+
+
+			Text& operator+=(std::string& str);
+			Text& operator+=(const char * str);
+			
+			Text& operator+(std::string& str);
+			Text& operator+(const char * str);
+
+			Text& operator=(std::string str);
+			
+			virtual Text& operator=(const Text&) = delete;
+	};
+}
 
 #endif

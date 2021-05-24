@@ -1,18 +1,28 @@
 #include "lcars_button.hh"
 
-LCARS_Button::LCARS_Button(SDL_Rect bounds, TTF_Font * font, std::string text) : LCARS_Component(bounds) {
-		m_pressed	= false;
-		m_font		= font;
-		m_text		= text;
+#include <cstring>
+#include <cstdio>
 
-		m_colors = (SDL_Color *) malloc(sizeof(SDL_Color) * 8);
+LCARS::Button::Button(SDL_Rect bounds) : Component(bounds) {
+	m_pressed	= false;
+	m_colors	= (SDL_Color *) malloc(sizeof(SDL_Color) * 8);
+	memset(m_colors, 0, sizeof(SDL_Color)*8);
 }
 
-LCARS_Button::~LCARS_Button() {
+LCARS::Button::Button(SDL_Rect bounds, std::string fontpath, std::string text) : Button(bounds) {
+	m_text = new Text(text, fontpath, bounds.h);
+}
+
+LCARS::Button::Button(SDL_Rect bounds, Font * font, std::string text) : Button(bounds) {
+	m_text = new Text(text, font);
+}
+
+LCARS::Button::~Button() {
+	delete m_text;
 	free(m_colors);
 }
 
-void LCARS_Button::HandleSDLEvent(SDL_Event * ev) {
+void LCARS::Button::HandleSDLEvent(SDL_Event * ev) {
 	switch(ev->type) {
 		case SDL_MOUSEBUTTONDOWN:
 			OnMouseDown(&(ev->button));
@@ -25,7 +35,7 @@ void LCARS_Button::HandleSDLEvent(SDL_Event * ev) {
 	}
 }
 
-void LCARS_Button::HandleCMPEvent(CMP_EVT_TYPE type) {
+void LCARS::Button::HandleCMPEvent(CMP_EVT_TYPE type) {
 	switch(type) {
 		case PD_FOCUS:
 			SetNeedsRepaint(true);
@@ -42,12 +52,12 @@ void LCARS_Button::HandleCMPEvent(CMP_EVT_TYPE type) {
 	}
 }
 
-void LCARS_Button::OnMouseDown(SDL_MouseButtonEvent * ev) {
+void LCARS::Button::OnMouseDown(SDL_MouseButtonEvent * ev) {
 	m_pressed = true;
 	SetNeedsRepaint(true);
 }
 
-void LCARS_Button::OnMouseUp(SDL_MouseButtonEvent * ev) {
+void LCARS::Button::OnMouseUp(SDL_MouseButtonEvent * ev) {
 	m_pressed = false;
 
 	for(int i = 0; i < m_action_listeners.Size(); ++i)
@@ -56,38 +66,34 @@ void LCARS_Button::OnMouseUp(SDL_MouseButtonEvent * ev) {
 	SetNeedsRepaint(true);
 }
 
-void LCARS_Button::OnMouseMove(SDL_MouseMotionEvent * ev) {
+void LCARS::Button::OnMouseMove(SDL_MouseMotionEvent * ev) {
 	
 }
 
-void LCARS_Button::AddActionListener(action_listener listener) {
+void LCARS::Button::AddActionListener(action_listener listener) {
 	m_action_listeners += listener;
 }
 
-void LCARS_Button::RemActionListener(action_listener listener) {
+void LCARS::Button::RemActionListener(action_listener listener) {
 	m_action_listeners -= listener;
 }
 
-void LCARS_Button::SetFont(TTF_Font * font) {
-	m_font = font;
+void LCARS::Button::SetFont(Font * font) {
+	m_text->SetFont(font);
 }
 
-TTF_Font * LCARS_Button::GetFont() {
-	return m_font;
+void LCARS::Button::SetText(std::string text) {
+	m_text->SetText(text);
 }
 
-void LCARS_Button::SetText(std::string text) {
-	m_text = text;
+LCARS::Text * LCARS::Button::GetText() {
+	return m_text;
 }
 
-std::string * LCARS_Button::GetText() {
-	return &m_text;
-}
-
-void LCARS_Button::SetColor(BTN_COLOR_TYPE colortype, SDL_Color color) {
+void LCARS::Button::SetColor(BTN_COLOR_TYPE colortype, SDL_Color color) {
 	m_colors[(int) colortype] = color;
 }
 
-SDL_Color * LCARS_Button::GetColor(BTN_COLOR_TYPE colortype) {
-	return &(m_colors[(int) colortype]);
+SDL_Color LCARS::Button::GetColor(BTN_COLOR_TYPE colortype) {
+	return m_colors[(int) colortype];
 }

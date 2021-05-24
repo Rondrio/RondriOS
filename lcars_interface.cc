@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-LCARS_Interface::LCARS_Interface(int x, int y, int width, int height) : LCARS_ICP(true) {
+LCARS::Interface::Interface(int x, int y, int width, int height) : ICP(true) {
 	m_bounds.x = x;
 	m_bounds.y = y;
 	m_bounds.w = width;
@@ -19,12 +19,12 @@ LCARS_Interface::LCARS_Interface(int x, int y, int width, int height) : LCARS_IC
 	wp = width/1000.0;
 }
 
-LCARS_Interface::~LCARS_Interface() {
+LCARS::Interface::~Interface() {
 	if(m_screen_texture)
 		SDL_DestroyTexture(m_screen_texture);
 }
 
-void LCARS_Interface::Draw(SDL_Renderer * renderer) {
+void LCARS::Interface::Draw(SDL_Renderer * renderer) {
 
 	if(!m_screen_texture) {
 		m_screen_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, m_bounds.w, m_bounds.h);
@@ -50,7 +50,7 @@ void LCARS_Interface::Draw(SDL_Renderer * renderer) {
 
 		/* PAINT Components */
 		for(int i = 0; i < m_components.Size(); ++i) {
-			LCARS_Component * cmp = m_components[i];
+			Component * cmp = m_components[i];
 			cmp->Draw(renderer, m_screen_texture);
 		}
 
@@ -82,7 +82,7 @@ void LCARS_Interface::Draw(SDL_Renderer * renderer) {
 	/* Priority Redraws. (This implementation allows for one Priority Redraw per "Frame") */
 	/* This may (or should) be changed in the future. */
 	if(m_priority_repaints.size() > 0) {
-		LCARS_Component * cmp = m_priority_repaints.back();
+		Component * cmp = m_priority_repaints.back();
 		m_priority_repaints.pop();
 
 		std::cout << "Priority Redraw!\n";
@@ -93,43 +93,43 @@ void LCARS_Interface::Draw(SDL_Renderer * renderer) {
 
 }
 
-void LCARS_Interface::AttachToScreen(LCARS_Screen * screen) {
+void LCARS::Interface::AttachToScreen(Monitor * screen) {
 	m_lcars_screen = screen;
 }
 
-void LCARS_Interface::AddComponent(LCARS_Component * cmp) {
+void LCARS::Interface::AddComponent(Component * cmp) {
 	m_components += cmp;
 	cmp->SetParent(this);
 
 	cmp->SetInterface(this);
 }
 
-void LCARS_Interface::RemComponent(LCARS_Component * cmp) {
+void LCARS::Interface::RemComponent(Component * cmp) {
 	m_components -= cmp;
 
 	cmp->SetInterface(nullptr);
 }
 
-void LCARS_Interface::AddPriorityRepaint(LCARS_Component * cmp) {
+void LCARS::Interface::AddPriorityRepaint(Component * cmp) {
 	m_priority_repaints.push(cmp);
 }
 
-void LCARS_Interface::SetNeedsRepaint(bool b) {
+void LCARS::Interface::SetNeedsRepaint(bool b) {
 	m_needs_repaint = b;
 }
 
-void LCARS_Interface::SetNeedsBufferRepaint(bool b) {
+void LCARS::Interface::SetNeedsBufferRepaint(bool b) {
 	m_needs_buffer_repaint = true;
 }
 
-LCARS_Screen * LCARS_Interface::GetScreen() {
+LCARS::Monitor * LCARS::Interface::GetScreen() {
 	return m_lcars_screen;
 }
 
-LCARS_Component * LCARS_Interface::ComponentAt(int x, int y) {
+LCARS::Component * LCARS::Interface::ComponentAt(int x, int y) {
 	for(int i = 0; i < m_components.Size(); ++i) {
-		LCARS_Component * cmp = m_components[i];
-		LCARS_Component * cmp_at;
+		Component * cmp = m_components[i];
+		Component * cmp_at;
 
 		if((cmp_at = cmp->ComponentAt(x, y)))
 			return cmp_at;
@@ -138,7 +138,7 @@ LCARS_Component * LCARS_Interface::ComponentAt(int x, int y) {
 	return nullptr;
 }
 
-void LCARS_Interface::DispatchSDLEvents(SDL_Event * ev) {
+void LCARS::Interface::DispatchSDLEvents(SDL_Event * ev) {
 
 	switch(ev->type) {
 		case SDL_MOUSEBUTTONDOWN:
@@ -149,7 +149,7 @@ void LCARS_Interface::DispatchSDLEvents(SDL_Event * ev) {
 			/* Set, who is going to have the FOCUS */
 			if(ev->type == SDL_MOUSEMOTION) {
 				SDL_MouseMotionEvent * mme = &(ev->motion);
-				LCARS_Component * cmp_mouse_over = ComponentAt(mme->x, mme->y);
+				Component * cmp_mouse_over = ComponentAt(mme->x, mme->y);
 
 
 				/* REMOVE PD Focus from the currently focused Compnent */
@@ -178,7 +178,7 @@ void LCARS_Interface::DispatchSDLEvents(SDL_Event * ev) {
 				/* All of the Code in this Section is there to correctly KB focus Components */
 
 				SDL_MouseButtonEvent *	mbe				= &(ev->button);
-				LCARS_Component *		cmp_mouse_down	= ComponentAt(mbe->x, mbe->y);
+				Component *		cmp_mouse_down	= ComponentAt(mbe->x, mbe->y);
 
 				/* Remove KB Focus from the currently focused Component IF there was one AND IF it is */
 				/* not the same as the one fetched above */

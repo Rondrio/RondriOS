@@ -8,95 +8,97 @@
 #include "lcars_icp.hh"
 #include "lcars_interface.hh"
 
-enum CMP_EVT_TYPE {
-	KB_FOCUS, KB_BLUR, PD_FOCUS, PD_BLUR
-};
+namespace LCARS {
 
-enum struct EVENT_TYPE {
-	SDL_EVENT, CMP_EVENT
-};
+	enum CMP_EVT_TYPE {
+		KB_FOCUS, KB_BLUR, PD_FOCUS, PD_BLUR
+	};
 
-struct Event {
-	EVENT_TYPE type;
-	SDL_Event * sdl_event;
-	CMP_EVT_TYPE cmp_event;
-};
+	enum struct EVENT_TYPE {
+		SDL_EVENT, CMP_EVENT
+	};
 
-class LCARS_Interface;
-typedef void (*event_listener)(Event event);
+	struct Event {
+		EVENT_TYPE type;
+		SDL_Event * sdl_event;
+		CMP_EVT_TYPE cmp_event;
+	};
 
-class LCARS_Component : public LCARS_ICP {
+	class Interface;
+	typedef void   (*event_listener)(Event event);
+	typedef void * (*component_func)(void * any);
 
-	protected:
-		SDL_Rect						m_bounds;
-		smp::list<LCARS_Component *>	m_children;
-		smp::list<event_listener>		m_ev_listeners;
+	class Component : public ICP {
 
-		volatile bool							m_has_pd_focus;
-		volatile bool							m_has_kb_focus;
+		protected:
+			SDL_Rect						m_bounds;
+			smp::list<Component *>			m_children;
+			smp::list<event_listener>		m_ev_listeners;
 
-		LCARS_ICP * m_parent = nullptr;
-		LCARS_Interface * m_interface = nullptr;
+			volatile bool							m_has_pd_focus;
+			volatile bool							m_has_kb_focus;
 
-		LCARS_Component(SDL_Rect rect);
+			ICP * m_parent = nullptr;
+			Interface * m_interface = nullptr;
 
-	public:
-					LCARS_Component()						= delete;
-					LCARS_Component(const LCARS_Component&)	= delete;
-		virtual ~	LCARS_Component();
+			Component(SDL_Rect rect);
 
-		virtual void		SetNeedsRepaint		(bool b)	override;
-		virtual SDL_Rect	GetAbsoluteBounds	()			override;
+		public:
+						Component()						= delete;
+						Component(const Component&)	= delete;
+			virtual ~	Component();
 
-		virtual void	SetPosX(int x);
-		virtual int		GetPosX();
+			virtual void		SetNeedsRepaint		(bool b)	override;
+			virtual SDL_Rect	GetAbsoluteBounds	()			override;
 
-		virtual void	SetPosY(int y);
-		virtual int		GetPosY();
+			virtual void	SetPosX(int x);
+			virtual int		GetPosX();
 
-		virtual void	SetHeight(int h);
-		virtual int		GetHeight();
+			virtual void	SetPosY(int y);
+			virtual int		GetPosY();
 
-		virtual void	SetWidth(int w);
-		virtual int		GetWidth();
+			virtual void	SetHeight(int h);
+			virtual int		GetHeight();
 
-		void SetInterface(LCARS_Interface * interface);
+			virtual void	SetWidth(int w);
+			virtual int		GetWidth();
 
-		void Draw(SDL_Renderer * renderer, SDL_Texture * buffer);
-		LCARS_Component * ComponentAt(int x, int y);
+			void SetInterface(Interface * interface);
 
-		virtual void AddChild(LCARS_Component * cmp);
-		virtual void RemChild(LCARS_Component * cmp);
+			void Draw(SDL_Renderer * renderer, SDL_Texture * buffer);
+			Component * ComponentAt(int x, int y);
 
-		void AddEventListener(event_listener listener);
-		void RemEventListener(event_listener listener);
+			virtual void AddChild(Component * cmp);
+			virtual void RemChild(Component * cmp);
 
-		/**
-		 * Dispatches an Event to all registered Eventlisteners of this Component.
-		 * This Method is not recursive and only Eventlisteners registered to this
-		 * Component will receive the Events.
-		 *
-		 * @param event The Event (An SDL_Event* or an CMP_EVENT_TYPE).
-		 * @param event_type The Type of the Event.
-		 * */
-		void DispatchEvent(Event event);
+			void AddEventListener(event_listener listener);
+			void RemEventListener(event_listener listener);
 
-		/* DO NOT USE */
-		void SetPDFocus(bool b);
-		void SetKBFocus(bool b);
-		void SetParent(LCARS_ICP * parent);
+			/**
+			 * Dispatches an Event to all registered Eventlisteners of this Component.
+			* This Method is not recursive and only Eventlisteners registered to this
+			* Component will receive the Events.
+			*
+			* @param event The Event (An SDL_Event* or an CMP_EVENT_TYPE).
+			* @param event_type The Type of the Event.
+			* */
+			void DispatchEvent(Event event);
 
-		virtual bool PointInHitbox(int x, int y)			= 0;
-		virtual void Paint(PaintContext * paintctx)			= 0;
+			/* DO NOT USE */
+			void SetPDFocus(bool b);
+			void SetKBFocus(bool b);
+			void SetParent(ICP * parent);
 
-		virtual void HandleSDLEvent(SDL_Event * ev)			= 0;
-		virtual void OnUnhandledSDLEvent(SDL_Event * ev)	= 0;
+			virtual bool PointInHitbox(int x, int y)			= 0;
+			virtual void Paint(PaintContext * paintctx)			= 0;
 
-		virtual void HandleCMPEvent(CMP_EVT_TYPE type)		= 0;
+			virtual void HandleSDLEvent(SDL_Event * ev)			= 0;
+			virtual void OnUnhandledSDLEvent(SDL_Event * ev)	= 0;
 
-		virtual LCARS_Component& operator=(const LCARS_Component& rhs) = delete;
-};
+			virtual void HandleCMPEvent(CMP_EVT_TYPE type)		= 0;
 
-
+			virtual Component& operator=(const Component& rhs) = delete;
+	};
+}
 
 #endif /* LCARS_COMPONENT_HH_ */

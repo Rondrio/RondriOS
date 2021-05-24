@@ -6,54 +6,58 @@
 #include <SDL2/SDL_ttf.h>
 #include <string>
 
+#include "lcars_text.hh"
 #include "simple_list.hh"
 
-enum struct BTN_COLOR_TYPE {
-	COLOR_IDLE,			COLOR_HOVER,		COLOR_PRESS,		COLOR_ACTIVE,
-	TEXT_COLOR_IDLE,	TEXT_COLOR_HOVER,	TEXT_COLOR_PRESS,	TEXT_COLOR_ACTIVE
-};
+namespace LCARS {
 
-typedef void (*action_listener)(void);
+	enum struct BTN_COLOR_TYPE {
+		COLOR_IDLE,			COLOR_HOVER,		COLOR_PRESS,		COLOR_ACTIVE,
+		TEXT_COLOR_IDLE,	TEXT_COLOR_HOVER,	TEXT_COLOR_PRESS,	TEXT_COLOR_ACTIVE
+	};
 
-class LCARS_Button : public LCARS_Component {
+	typedef void (*action_listener)(void);
 
-	protected:
-		volatile bool	m_pressed;
-		TTF_Font	*	m_font;
-		std::string		m_text;
+	class Button : public Component {
 
-		SDL_Color * m_colors;
+		private:
+			Button(SDL_Rect bounds);
 
-		smp::list<action_listener> m_action_listeners;
+		protected:
+			volatile bool	m_pressed;
+			Text *			m_text;
 
-		LCARS_Button(SDL_Rect bounds, TTF_Font * font, std::string text);
+			SDL_Color *					m_colors;
+			smp::list<action_listener>	m_action_listeners;
 
-	public:
-					LCARS_Button()						= delete;
-					LCARS_Button(const LCARS_Button&)	= delete;
-		virtual ~	LCARS_Button();
+			Button(SDL_Rect bounds, Font * font, std::string text);
+			Button(SDL_Rect bounds, std::string font_path, std::string text);
 
-		virtual void HandleSDLEvent(SDL_Event * ev) override;
-		virtual void HandleCMPEvent(CMP_EVT_TYPE type) override;
+		public:
+						Button()				= delete;
+						Button(const Button&)	= delete;
+			virtual ~	Button();
 
-		virtual void OnMouseDown		(SDL_MouseButtonEvent * ev);
-		virtual void OnMouseUp			(SDL_MouseButtonEvent * ev);
-		virtual void OnMouseMove		(SDL_MouseMotionEvent * ev);
+			virtual void HandleSDLEvent(SDL_Event * ev) override;
+			virtual void HandleCMPEvent(CMP_EVT_TYPE type) override;
 
-		void AddActionListener(action_listener listener);
-		void RemActionListener(action_listener listener);
+			virtual void OnMouseDown		(SDL_MouseButtonEvent * ev);
+			virtual void OnMouseUp			(SDL_MouseButtonEvent * ev);
+			virtual void OnMouseMove		(SDL_MouseMotionEvent * ev);
 
-		void			SetFont(TTF_Font * font);
-		TTF_Font	*	GetFont();
+			void AddActionListener(action_listener listener);
+			void RemActionListener(action_listener listener);
 
-		void			SetText(std::string text);
-		std::string	*	GetText();
+			void			SetFont(Font * font);
 
-		void		SetColor		(BTN_COLOR_TYPE colortype, SDL_Color color);
-		SDL_Color *	GetColor		(BTN_COLOR_TYPE colortype);
+			void			SetText(std::string text);
+			Text *			GetText();
 
-		virtual LCARS_Button& operator=(const LCARS_Button& rhs) = delete;
-};
+			void		SetColor		(BTN_COLOR_TYPE colortype, SDL_Color color);
+			SDL_Color 	GetColor		(BTN_COLOR_TYPE colortype);
 
+			virtual Button& operator=(const Button& rhs) = delete;
+	};
+}
 
 #endif /* LCARS_BUTTON_HH_ */

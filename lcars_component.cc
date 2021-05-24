@@ -3,17 +3,17 @@
 #include <iostream>
 #include <SDL2/SDL.h>
 
-LCARS_Component::LCARS_Component(SDL_Rect rect) : LCARS_ICP(false) {
+LCARS::Component::Component(SDL_Rect rect) : ICP(false) {
 		m_bounds = rect;
 		m_has_pd_focus = false;
 		m_has_kb_focus = false;
 }
 
-LCARS_Component::~LCARS_Component() {
+LCARS::Component::~Component() {
 
 }
 
-SDL_Rect LCARS_Component::GetAbsoluteBounds() {
+SDL_Rect LCARS::Component::GetAbsoluteBounds() {
 	SDL_Rect pos = {0, 0, 0, 0};
 
 	if(m_parent) {
@@ -29,50 +29,50 @@ SDL_Rect LCARS_Component::GetAbsoluteBounds() {
 	return pos;
 }
 
-void LCARS_Component::SetNeedsRepaint(bool b) {
+void LCARS::Component::SetNeedsRepaint(bool b) {
 	m_needs_repaint = b;
 
 	if(m_parent)
 		m_parent->SetNeedsRepaint(b);
 }
 
-void LCARS_Component::SetPosX(int x) {
+void LCARS::Component::SetPosX(int x) {
 	m_bounds.x = x;
 	SetNeedsRepaint(true);
 }
 
-int LCARS_Component::GetPosX() {
+int LCARS::Component::GetPosX() {
 	return m_bounds.x;
 }
 
-void LCARS_Component::SetPosY(int y) {
+void LCARS::Component::SetPosY(int y) {
 	m_bounds.y = y;
 	SetNeedsRepaint(true);
 }
 
-int LCARS_Component::GetPosY() {
+int LCARS::Component::GetPosY() {
 	return m_bounds.y;
 }
 
-void LCARS_Component::SetHeight(int h) {
+void LCARS::Component::SetHeight(int h) {
 	m_bounds.h = h;
 	SetNeedsRepaint(true);
 }
 
-int LCARS_Component::GetHeight() {
+int LCARS::Component::GetHeight() {
 	return m_bounds.h;
 }
 
-void LCARS_Component::SetWidth(int w) {
+void LCARS::Component::SetWidth(int w) {
 	m_bounds.w = w;
 	SetNeedsRepaint(true);
 }
 
-int LCARS_Component::GetWidth() {
+int LCARS::Component::GetWidth() {
 	return m_bounds.w;
 }
 
-void LCARS_Component::SetInterface(LCARS_Interface * interface) {
+void LCARS::Component::SetInterface(Interface * interface) {
 	m_interface = interface;
 
 	for(int i = 0; i < m_children.Size(); ++i) {
@@ -80,7 +80,7 @@ void LCARS_Component::SetInterface(LCARS_Interface * interface) {
 	}
 }
 
-void LCARS_Component::Draw(SDL_Renderer * renderer, SDL_Texture * buffer) {
+void LCARS::Component::Draw(SDL_Renderer * renderer, SDL_Texture * buffer) {
 		
 		if(!NeedsRepaint()) return;
 		
@@ -97,7 +97,7 @@ void LCARS_Component::Draw(SDL_Renderer * renderer, SDL_Texture * buffer) {
 		m_needs_repaint = false;
 }
 
-LCARS_Component * LCARS_Component::ComponentAt(int x, int y) {
+LCARS::Component * LCARS::Component::ComponentAt(int x, int y) {
 	for(int i = 0; i < m_children.Size(); ++i) {
 		if(m_children[i]->ComponentAt(x, y)) {
 			return m_children[i];
@@ -109,7 +109,7 @@ LCARS_Component * LCARS_Component::ComponentAt(int x, int y) {
 	return nullptr;
 }
 
-void LCARS_Component::AddChild(LCARS_Component * cmp) {
+void LCARS::Component::AddChild(Component * cmp) {
 	m_children.Add(cmp);
 	cmp->SetParent(this);
 
@@ -118,35 +118,35 @@ void LCARS_Component::AddChild(LCARS_Component * cmp) {
 	}
 }
 
-void LCARS_Component::RemChild(LCARS_Component * cmp) {
+void LCARS::Component::RemChild(Component * cmp) {
 	cmp->SetParent(nullptr);
 	m_children.Rem(cmp);
 }
 
-void LCARS_Component::AddEventListener(event_listener listener) {
+void LCARS::Component::AddEventListener(event_listener listener) {
 	if(listener)
 		m_ev_listeners += listener;
 }
 
-void LCARS_Component::RemEventListener(event_listener listener) {
+void LCARS::Component::RemEventListener(event_listener listener) {
 	if(listener)
 		m_ev_listeners -= listener;
 }
 
-void LCARS_Component::DispatchEvent(Event event) {
+void LCARS::Component::DispatchEvent(Event event) {
 	for(int i = 0; i < m_ev_listeners.Size(); ++i) {
 		m_ev_listeners[i](event);
 	}
 }
 
-void LCARS_Component::SetPDFocus(bool b) {
+void LCARS::Component::SetPDFocus(bool b) {
 	m_has_pd_focus = b;
 }
 
-void LCARS_Component::SetKBFocus(bool b) {
+void LCARS::Component::SetKBFocus(bool b) {
 	m_has_kb_focus = b;
 }
 
-void LCARS_Component::SetParent(LCARS_ICP * parent) {
+void LCARS::Component::SetParent(ICP * parent) {
 	m_parent = parent;
 }

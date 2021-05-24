@@ -7,7 +7,7 @@
 #include "lcars_timer.hh"
 #include "lcars_interface.hh"
 
-LCARS_Screen::LCARS_Screen(Display * dpy, int x, int y, int width, int height) {
+LCARS::Monitor::Monitor(Display * dpy, int x, int y, int width, int height) {
 	m_dpy		= dpy;
 	m_width		= width;
 	m_height	= height;
@@ -18,12 +18,12 @@ LCARS_Screen::LCARS_Screen(Display * dpy, int x, int y, int width, int height) {
 	m_interface = nullptr;
 }
 
-LCARS_Screen::~LCARS_Screen() {
+LCARS::Monitor::~Monitor() {
 	SDL_DestroyRenderer	(m_sdl_renderer);
 	SDL_DestroyWindow	(m_sdl_window);
 }
 
-void LCARS_Screen::Draw() {
+void LCARS::Monitor::Draw() {
 
 	//SDL_RenderClear(m_sdl_renderer);
 	/* --------------------------------------- */
@@ -67,24 +67,24 @@ void LCARS_Screen::Draw() {
 	//SDL_RenderPresent(m_sdl_renderer);
 }
 
-void LCARS_Screen::Remap() {
+void LCARS::Monitor::Remap() {
 	m_interface->Remap();
 }
 
-void LCARS_Screen::SetInterface(LCARS_Interface * interface) {
+void LCARS::Monitor::SetInterface(Interface * interface) {
 	m_interface = interface;
 	m_interface->AttachToScreen(this);
 }
 
-LCARS_Interface * LCARS_Screen::GetInterface() {
+LCARS::Interface * LCARS::Monitor::GetInterface() {
 	return m_interface;
 }
 
-Display * LCARS_Screen::GetDisplay() {
+Display * LCARS::Monitor::GetDisplay() {
 	return m_dpy;
 }
 
-void LCARS_Screen::AddTimer(uint64_t runtime, int repeats, timer_action action_func) {
+void LCARS::Monitor::AddTimer(uint64_t runtime, int repeats, timer_action action_func) {
 
 	time_t ti;
 	time(&ti);
@@ -98,7 +98,7 @@ void LCARS_Screen::AddTimer(uint64_t runtime, int repeats, timer_action action_f
 	m_timers += timer;
 }
 
-void LCARS_Screen::DispatchSDLEvents(SDL_Event * ev) {
+void LCARS::Monitor::DispatchSDLEvents(SDL_Event * ev) {
 	//TODO: Read TODO at lcars_screen.hh:15
 	m_interface->DispatchSDLEvents(ev);
 }

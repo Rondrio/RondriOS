@@ -19,14 +19,15 @@
 
 #include "simple_list.hh"
 #include "lcars_error.hh"
+#include "lcars_component.hh"
 
 static bool grabbed = false, resize = false;
 static int grab_x, grab_y, grab_off_x, grab_off_y;
 static Window grabbed_frame;
 
-XErrorHandler LCARS::s_x_error_handler;
+XErrorHandler LCARS::LCARS::s_x_error_handler;
 
-LCARS::LCARS(Display * dpy) {
+LCARS::LCARS::LCARS(Display * dpy) {
 	m_dpy					= dpy;
 	m_screen				= nullptr;
 	m_active_lcars_screen	= nullptr;
@@ -36,21 +37,21 @@ LCARS::LCARS(Display * dpy) {
 	m_key_listeners = new smp::list<KeyListener *>();
 }
 
-LCARS::~LCARS() {
+LCARS::LCARS::~LCARS() {
 	delete m_key_listeners;
 }
 
-void LCARS::AddKeyListener(KeyListener * kl) {
+void LCARS::LCARS::AddKeyListener(KeyListener * kl) {
 	m_key_listeners->Add(kl);
 }
 
-int LCARS::Checkmod(XKeyEvent ke, KeyListener listener) {
+int LCARS::LCARS::Checkmod(XKeyEvent ke, KeyListener listener) {
 	//TODO: Numlockmask
 	KeySym keysym = XkbKeycodeToKeysym(m_dpy, ke.keycode, 0, 0);
 	return (keysym == listener.keysym && ke.state == listener.modmask);
 }
 
-int LCARS::ErrorHandler(Display * dpy, XErrorEvent * ev) {
+int LCARS::LCARS::ErrorHandler(Display * dpy, XErrorEvent * ev) {
 	switch(ev->error_code) {
 		case BadWindow: {
 			std::cerr << "WindowID: " << ev->resourceid << std::endl;
@@ -65,7 +66,7 @@ int LCARS::ErrorHandler(Display * dpy, XErrorEvent * ev) {
 	return 0;
 }
 
-int LCARS::HandleEventX(XEvent * ev) {
+int LCARS::LCARS::HandleEventX(XEvent * ev) {
 
 	switch(ev->type) {
 
@@ -246,16 +247,16 @@ int LCARS::HandleEventX(XEvent * ev) {
 	return 1;
 }
 
-int LCARS::HandleEventSDL(SDL_Event * ev) {
+int LCARS::LCARS::HandleEventSDL(SDL_Event * ev) {
 	m_active_lcars_screen->DispatchSDLEvents(ev);
 	return 1;
 }
 
-int LCARS::GetWindowCount() {
+int LCARS::LCARS::GetWindowCount() {
 	return m_windows.Size();
 }
 
-void LCARS::FrameWindow(Window w) {
+void LCARS::LCARS::FrameWindow(Window w) {
 	XWindowAttributes x_window_attrs;
 	XGetWindowAttributes(m_dpy, w, &x_window_attrs);
 
@@ -298,18 +299,18 @@ void LCARS::FrameWindow(Window w) {
 	m_windows += w;
 }
 
-void LCARS::UnframeWindow(Window w) {
+void LCARS::LCARS::UnframeWindow(Window w) {
 
 	m_windows -= w;
 	XDestroyWindow(m_dpy, w);
 	m_active_lcars_screen->GetInterface()->SetNeedsBufferRepaint(true);
 }
 
-Window LCARS::GetFocusedWindow() {
+Window LCARS::LCARS::GetFocusedWindow() {
 	return m_focused_window;
 }
 
-int LCARS::Init() {
+int LCARS::LCARS::Init() {
 
 	/* INITIALIZE SDL & XSERVER-CONNECTION */
 	
@@ -343,7 +344,7 @@ int LCARS::Init() {
 	}
 
 	/* SETUP LCARS_SCREENS */
-	m_active_lcars_screen = new LCARS_Screen(m_dpy, 0, 0, m_screen->width, m_screen->height);
+	m_active_lcars_screen = new Monitor(m_dpy, 0, 0, m_screen->width, m_screen->height);
 	// TestInterface * test_interface = new TestInterface(0, 0, m_screen->width, m_screen->height);
 	// m_active_lcars_screen->SetInterface(test_interface);
 	// test_interface->Init();
@@ -363,7 +364,7 @@ int LCARS::Init() {
 	return 1;
 }
 
-int LCARS::Run() {
+int LCARS::LCARS::Run() {
 
 	m_running = true;
 
@@ -406,7 +407,7 @@ int LCARS::Run() {
 	return Exit(1);
 }
 
-int LCARS::Exit(int exitcode) {
+int LCARS::LCARS::Exit(int exitcode) {
 
 	m_running = false;
 
@@ -423,10 +424,10 @@ int LCARS::Exit(int exitcode) {
 	return exitcode;
 }
 
-Display * LCARS::GetDisplay() {
+Display * LCARS::LCARS::GetDisplay() {
 	return m_dpy;
 }
 
-LCARS_Screen * LCARS::GetScreen() {
+LCARS::Monitor * LCARS::LCARS::GetScreen() {
 	return m_active_lcars_screen;
 }

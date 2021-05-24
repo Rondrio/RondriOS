@@ -41,8 +41,8 @@ text_t * PaintContext::PrepareText(int16_t x, int16_t y, std::string * str, SDL_
 	SDL_SetRenderTarget(m_renderer, nullptr);
 	SDL_Texture * tex	= SDL_CreateTextureFromSurface(m_renderer, surf);
 
-	if(surf)
-		SDL_FreeSurface(surf);
+	// if(surf)
+	// 	SDL_FreeSurface(surf);
 
 	if(!tex) {
 		std::cerr << "ERROR: " << SDL_GetError() << std::endl;
@@ -62,6 +62,7 @@ text_t * PaintContext::PrepareText(int16_t x, int16_t y, std::string * str, SDL_
 		std::cerr << "ERROR: Could not allocate Memory." << std::endl;
 
 	text->tex_text	= tex;
+	text->sur_text	= surf;
 	text->str		= str;
 	text->bounds	= bounds;
 
@@ -163,7 +164,12 @@ text_t * PaintContext::PrepareBlendedText(int16_t x, int16_t y, std::string * st
 	if(!surf)
 		std::cerr << "ERROR: " << SDL_GetError() << std::endl;
 
-	return PrepareText(x, y, str, surf);
+	text_t * t = PrepareText(x, y, str, surf);
+	
+	if(surf && !t)
+		SDL_FreeSurface(surf);
+
+	return t;
 }
 
 text_t * PaintContext::PrepareSolidText(int16_t x, int16_t y, std::string * str) {
@@ -172,16 +178,19 @@ text_t * PaintContext::PrepareSolidText(int16_t x, int16_t y, std::string * str)
 	if(!surf)
 		std::cerr << "ERROR: " << SDL_GetError() << std::endl;
 
-	return PrepareText(x, y, str, surf);
-}
+	text_t * t = PrepareText(x, y, str, surf);
 
-void PaintContext::PrepareText(LCARS_Text * text) {
-	text->Regenerate(m_renderer);
+	if(surf && !t)
+		SDL_FreeSurface(surf);
+
+	return t;
 }
 
 void PaintContext::DestroyText(text_t * text) {
 	if(text->tex_text)
 		SDL_DestroyTexture(text->tex_text);
+	if(text->sur_text)
+		SDL_FreeSurface(text->sur_text);
 	free(text);
 }
 
@@ -195,8 +204,11 @@ void PaintContext::DrawText(text_t * text, SDL_Rect * src, SDL_Rect * dst) {
 	SDL_SetRenderTarget(m_renderer, m_buffer);
 }
 
-void PaintContext::DrawText(int x, int y, LCARS_Text * text) {
-
+void PaintContext::DrawText(int x, int y, LCARS::Text * text) {
+	
+	text->Regenerate(m_renderer);
+	SDL_Texture * texture = text->GetTexture();
+	
 	SDL_Rect text_bounds = text->GetBounds();
 
 	SDL_Rect modded_dst = {
@@ -208,9 +220,8 @@ void PaintContext::DrawText(int x, int y, LCARS_Text * text) {
 	};
 
 	SDL_SetRenderTarget(m_renderer, m_texture);
-	if(SDL_RenderCopy(m_renderer, text->GetTexture(), &modded_src, &modded_dst) == -1)
-		std::cerr << "ERROR I: " << SDL_GetError() << std::endl;
-
+	if(SDL_RenderCopy(m_renderer, texture, &modded_src, &modded_dst) == -1)
+			std::cerr << "ERROR I: " << SDL_GetError() << std::endl;
 	SDL_SetRenderTarget(m_renderer, m_buffer);
 }
 

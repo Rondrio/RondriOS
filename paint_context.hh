@@ -17,6 +17,7 @@ struct bezier_t {
 
 struct text_t {
 	SDL_Texture *	tex_text;
+	SDL_Surface *	sur_text;
 	std::string	*	str;
 	SDL_Rect		bounds;
 };
@@ -71,11 +72,10 @@ class PaintContext {
 		 * */
 				text_t *	PrepareBlendedText(int16_t x, int16_t y, std::string * str);
 				text_t *	PrepareSolidText(int16_t x, int16_t y, std::string * str);
-				void		PrepareText(LCARS_Text * text);
 		static	void		DestroyText(text_t * text);
 
 		void DrawText(text_t * text, SDL_Rect * src, SDL_Rect * dst);
-		void DrawText(int x, int y, LCARS_Text * text);
+		void DrawText(int x, int y, LCARS::Text * text);
 
 		PaintContext& operator=(const PaintContext&) = delete;
 };
