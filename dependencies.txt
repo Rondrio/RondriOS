@@ -1,2 +1,12 @@
-1. SDL2 / SDL2_gfx / SDL2_ttf / SDL_image
+1. cairo
 2. Xlib / X11
+
+TODO:
+
+- BigDeco sollte seine Parameter verändern lassen von außerhalb (also z.B. die Armlänge oder Grundbreite).
+- Events sollten ihr Ursprung-Objekt mutliefern.
+- Labels += SetText(std::string)
+- SolidDeco += SetLabel()
+- SolidDeco += AddButton()
+
+- Animations 
